@@ -235,17 +235,27 @@ We will introduce an efficiently QRAM only requiring O(log N) operations in our 
 
 The classical problem has linear complexity, which greatly constrains the design of the quantum methods, especially quantum-classical hybrid methods. 
 
-It is already known that, if someone wants to fully convert components in quantum states to a classical memory, it uses at least $O(n)$ times. The pure classical solver uses time integration, an iteration process being necessary. If the result is stored in the quantum states with any quantum solver, and we expect data transferred between each step of the iteration are classical, the “quantum-classical converter” process is inevitable and $O(n)$ time is consumed, and no acceleration exists (second case in the table).
+It is already known that, if someone wants to fully convert components in quantum states to a classical memory, it uses at least $O(n)$ times. The pure classical solver uses time integration, an iteration process being necessary. If the result is stored in the quantum states with any quantum solver, and we expect data transferred between each step of the iteration are classical, the “quantum-classical converter” process is inevitable and $O(n)$ time is consumed, and no acceleration exists (second case in the table.~\ref{tab2}).
 
-For the fourth case of the table, we declare it impossible to implement such a plan in real. The problem is the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As we have mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we will prove formally that this process cannot be implemented by a linear operator, which is considered as fundamental for the quantum mechanics. The proof is written in the Supplementary Information.
+For the fourth case of the table.~\ref{tab2}, we declare it impossible to implement such a plan in real. The problem is the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As we have mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we will prove formally that this process cannot be implemented by a linear operator, which is considered as fundamental for the quantum mechanics. The proof is written in the Supplementary Information.
+\begin{table*}
+\caption{Comparison of quantum approach and classical approach}\label{tab2}
+\resizebox{\textwidth}{!}{ \begin{tabular}{|c|c|c|c|c|}
+\hline 
+Iteration&Equation Solver&Data Between Each Step&Slowest Sub-procedure&Time complexity \\
+ & & & &(n denotes the number of mesh grid)\\
+\hline  
+Yes&Classical&Classical&Multigrid Linear Equation Solver&$O(n)$\\
+\hline 
+Yes&Quantum&Classical&Quantum Classical Converter&$O(n)$\\
+\hline 
+Yes&Quantum&Quantum&Quantum Linear System Solver (With QRAM)&$O(log(n))$\\
+\hline 
+Yes&Quantum&Quantum&Impossible to implement (Without QRAM)&$-$\\
+\hline 
+\end{tabular} }
+\end{table*}
 
-% \begin{tabular}{|l|c|c|c|r|} %l(left)居左显示 r(right)居右显示 c居中显示
-% 	\hline 
-% 	Iteration&Equation Solver&Data Between Each Step&Slowest Sub-procedure&Time complexity (n denotes the number of mesh grid)\\
-% 	\hline  
-% 	Yes&Classical&Classical&Multigrid Linear Equation Solver&$O(n)$\\
-% 	\hline 
-% \end{tabular}
 
 % \subsubsection{Advantages of the Algorithm}
 
