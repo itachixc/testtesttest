@@ -149,7 +149,7 @@ Along with the algorithm detail, we also discuss the difficulties of the problem
 
 SU2 is an open-source fluid dynamics solver. We study its SU2\_CFD module to solve the computational fluid dynamic problem and the target is to replace some modules in the classical solver by quantum subprocess to form a quantum-classical hybrid software, finally to demonstrate the quantum speed-up. Here is the modules we replace in the SU2 solver.
 
-Process: MultiGrid_Cycle and Preprocessing in the CFluidIteration.
+Process: MultiGrid\_Cycle and Preprocessing in the CFluidIteration.
 
 Data Structure: class CGeometry and CNumerics
 
@@ -161,21 +161,13 @@ Data Structure: class CGeometry and CNumerics
 
 The preprocessing in the CMultiGridIntegration includes the preprocess about the generation of the linear problem. This part is replaced by quantum arithmetic and calling to the oracle holding the data of the mesh information. The final target, similar to the classical process, is to generate the quantum data needed in the next step: Quantum linear solver.
 
-MultiGrid_Cycle calls the TimeIntegration method in the CMultiGridIntegration, which is replaced by quantum linear solver. The quantum linear solver is exponentially faster than the classical counterpart. The SpaceIntegration is no longer needed because it is automatically handled by the quantum parallism.
+MultiGrid\_Cycle calls the TimeIntegration method in the CMultiGridIntegration, which is replaced by quantum linear solver. The quantum linear solver is exponentially faster than the classical counterpart. The SpaceIntegration is no longer needed because it is automatically handled by the quantum parallism.
 
-The preprocessing in the CFluidIteration handles the result after the MultiGrid_Cycle, generates the data for the next iteration, and displays the result. This module is replaced by a quantum postprocess, which aims to add the variation to the vector and to prepare the next iteration. 
-
-% Our algorithm is a quantum version of  finite volume method in CFD problem. We use quantum circuit to realize linear equations construction and solution process. In this section, we show the whole process of our algorithm. The flow chart is shown in fig.~\ref{CfdFlowChart}
-\begin{figure}[htbp]
-    \subfigure{\includegraphics[width=0.48\textwidth]{Fig/quantum_cfd_flow_chart.png}}
-     \caption{Flow chart of our algorithm.}
-    \label{CfdFlowChart}
-\end{figure}
+The preprocessing in the CFluidIteration handles the result after the MultiGrid\_Cycle, generates the data for the next iteration, and displays the result. This module is replaced by a quantum postprocess, which aims to add the variation to the vector and to prepare the next iteration. 
 
 \subsection{Comparing quantum approach with classical approach}
 
 \subsubsection{Classical Solver}
-
 
 The implicit Euler solver has the linear complexity. We declare this result with two sides: in both theoretical and experimental ways. The theory shows that the classical approach uses …, which are expected to have the complexity $O(n)$ where $n$ denotes the number of mesh. We also did experiment on various grid size and calculates the running time (except the preparation). As the figure shows, that running time has great linear relation with the mesh number.
 \begin{figure} 
@@ -184,9 +176,7 @@ The implicit Euler solver has the linear complexity. We declare this result with
 \caption{SU2 running time.} \label{su2Speed}
 \end{figure} 
 
-
-\subsubsection{QRAM}
- 
+\subsubsection{QRAM} 
 
 QRAM is a quantum analogue to the classical Random Access Memory (RAM). QRAM enables the user obtaining the data in the QRAM efficiently while the address is given in the superposition state. 
 $$
@@ -200,9 +190,9 @@ We will introduce an efficiently QRAM only requiring O(log N) operations in our 
 
 \subsubsection{Quantum Linear Solver}
 
-We here use the quantum linear solver as the accelerator of the calculation. The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The algorithm solves the linear equation Ax = b, which requires O((s log⁡N)/ϵ) oracle query and has the successful rate with O(1/d) where N represents the dimension of the equation, s the sparsity of the matrix, ϵ the target precision, and d the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works. In these works, the complexity dependencies on the precision, conditional number are changed from linear to logarithm. The works introduces a method of linear combination of the operators, which are inspired by the previous works about the duality quantum computing framework established by Long.
+We here use the quantum linear solver as the accelerator of the calculation. The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The algorithm solves the linear equation $Ax = b$, which requires $O((s log⁡N)/\epsilon)$ oracle query and has the successful rate with $O(1/d)$ where N represents the dimension of the equation, s the sparsity of the matrix, $\epsilon$ the target precision, and d the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works. In these works, the complexity dependencies on the precision, conditional number are changed from linear to logarithm. The works introduces a method of linear combination of the operators, which are inspired by the previous works about the duality quantum computing framework established by Long.
 
-The solver requires an efficient quantum representation of the matrix A and constant b ⃗. In this problem, the set of the partial derivative equations should be linearized to generate the expression of A and b. We here have
+The solver requires an efficient quantum representation of the matrix A and constant b. In this problem, the set of the partial derivative equations should be linearized to generate the expression of A and b. We here have
 
 $$
 u^0=u^0(initializer)
@@ -221,34 +211,27 @@ u^i=u^{i-1}+\Delta u^i
 $$
 where $M$ denotes the given information of the mesh grid. In each iteration step, the coefficient matrix and the constant vector of the linear equation are related to the solution of the previous step.
 
-\subsection{Complexity Analysis of the Quantum Linear Solver }
-
-
-In the reference, two kinds of complexity is discussed, including the query complexity and the gate complexity.
-
 \subsubsection{Overall Complexity without QRAM }
-
 
 The classical problem has linear complexity, which greatly constrains the design of the quantum methods, especially quantum-classical hybrid methods. 
 
 It is already known that, if someone wants to fully convert components in quantum states to a classical memory, it uses at least $O(n)$ times. The pure classical solver uses time integration, an iteration process being necessary. If the result is stored in the quantum states with any quantum solver, and we expect data transferred between each step of the iteration are classical, the “quantum-classical converter” process is inevitable and $O(n)$ time is consumed, and no acceleration exists (second case in the table).
 
-table
+
 
 For the fourth case of the table, we declare it impossible to implement such a plan in real. The problem is the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As we have mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we will prove formally that this process cannot be implemented by a linear operator, which is considered as fundamental for the quantum mechanics. The proof is written in the section 3.1.
 
-\subsubsection{Overall Complexity with QRAM }
+\subsubsection{Overall Complexity with QRAM}
 
 QRAM is necessary in model to demonstrate quantum speed up. We use QRAM in three procedures. First is to store the information about the mesh grid. Second is to store the interval results of the solver. Third is to help recover from the probabilistic error of performing a non-unitary transformation.
 
-Improvement for mesh generation
+\subsubsection{Improvement for mesh generation}
 
-Advantages and Drawbacks
+\subsubsection{Advantages}
 
 Advantages
 
-Drawbacks
-
+\subsubsection{Drawbacks}
 
 
 
