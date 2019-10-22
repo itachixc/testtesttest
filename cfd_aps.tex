@@ -206,9 +206,9 @@ where $M$ denotes the given information of the mesh grid. In each iteration step
 QRAM is necessary in model to demonstrate quantum speed up. We use QRAM in three procedures. First is to store the information about the mesh grid. Second is to store the interval results of the solver. Third is to help recover from the probabilistic error of performing a non-unitary transformation. Here we list the qubit,query and gate complexity of the whole process of our algorithm: the required qubit number is
 $$
 O(qnum)=O(2log(4N)+log(d\kappa log(d\kappa/\epsilon)))
-$$. 
+$$
 The QRAM and oracle query complexity is 
-$$O(query)=O(d\kappa^2log^2(d\kappa/\epsilon))$$.
+$$O(query)=O(d\kappa^2log^2(d\kappa/\epsilon))$$
 The gate complexity is 
 $$
 O(d\kappa^2log^2(d\kappa/\epsilon)\times poly(log(4N)/\epsilon))
