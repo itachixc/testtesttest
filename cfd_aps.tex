@@ -70,8 +70,7 @@ pra,
 
 \preprint{APS/123-QED}
 
-\title{A quantum algorithm for solving computational fluid dynamics problems}% Force line breaks with \\
-\thanks{A footnote to the article title}%
+\title{A quantum algorithm for solving computational fluid dynamics problems}
 
 \author{Zhao-Yun Chen}
 %  \altaffiliation[Also at ]{Physics Department, XYZ University.}%Lines break automatically or can be forced with \\
@@ -119,56 +118,52 @@ pra,
              %  but any date may be explicitly specified
 
 \begin{abstract}
-    Computational fluid dynamics (CFD) is a branch of fluid mechanics that uses numerical computation to analyze fluid flows. When the number of mesh number grows, the requirement of the computing resources becomes more expensive. We found that if the classical solver was partially replaced by the quantum approach, speedup would be achieved. Here, we propose a quantum algorithm to solve CFD problems, which exponentially faster than the classical solver. We analyzed the time complexity and requirement of qubit resources of our method and simulated a specific CFD problem to prove the result. Our algorithm accelerates the development of CFD and provides a reference for the application of quantum computing in other fields.
-% \begin{description}
-% \item[Usage]
-% Secondary publications and information retrieval purposes.
-% \item[PACS numbers]
-% May be entered using the \verb+\pacs{#1}+ command.
-% \item[Structure]
-% You may use the \texttt{description} environment to structure your abstract;
-% use the optional argument of the \verb+\item+ command to give the category of each item. 
-% \end{description}
+    Computational fluid dynamics (CFD) is a branch of fluid mechanics that uses numerical computation to analyze fluid flows. When the number of mesh grows, the requirement of the computing resources becomes more expensive. Here, we propose a quantum algorithm to solve CFD problems, which exponentially faster than the classical solver. We analyzed the time complexity and requirement of qubit resources of our algorithm and simulated a specific CFD problem to prove the result.
+
 \end{abstract}
 
-\pacs{Valid PACS appear here}% PACS, the Physics and Astronomy
-                             % Classification Scheme.
-%\keywords{Suggested keywords}%Use showkeys class option if keyword
-                              %display desired
+\pacs{Valid PACS appear here}
+
 \maketitle
 
-%\tableofcontents
 \section{Introduction}
 Quantum computing is promising to have wide application on various computational tasks. It is believed that quantum computing has potentially exponential acceleration over the classical approach. There have already been many quantum algorithms to prove this idea: quantum factorization, quantum simulation, linear problem solver, etc. 
 
-Quantum computing has “quantum parallism”. An n-qubit quantum state is a vector in $C^(2^n)$ Hilbert space (a complex linear space). Every quantum operation is a transformation in the such linear space. If the quantum state vector encodes the description to a realistic problem, we can handle the whole vector with one operation in parallel without iterating over them. For example, if we want to multiply a matrix and vector, we no longer need for-loops, but with a few quantum gates directly applying on the input quantum states. This feature enables a group of algorithms called quantum linear algebra, which are exponentially faster than the classical algorithm.
+Quantum computing has “quantum parallism”. An n-qubit quantum state is a vector in $C^{2^n}$ Hilbert space (a complex linear space). Every quantum operation is a transformation in the such linear space. If the quantum state vector encodes the description to a realistic problem, we can handle the whole vector with one operation in parallel without iterating over them. For example, if we want to multiply a matrix and vector, we no longer need for-loops, but with a few quantum gates directly applying on the input quantum states. This feature enables a group of algorithms called quantum linear algebra, which are exponentially faster than the classical algorithm.
 
 Computational Fluid Dynamics (CFD) problems are often related to solving a series of equations in numerical methods. Here we do not introduce the classical CFD method. But we need to mention that a CFD solver needs to do time integration on the partial derivative equations, so that it needs to iterate with a $\Delta t$ to calculate a small evolution of the system, and finally stops when the system goes stable. In this problem set, we should understand the SU2 solver and try to replace some modules with quantum subroutines, (a.k.a. quantum-classical hybrid approach,) to seek quantum speed-up in this problem.
 
-Here we introduce our algorithm. The modules that we replace are the data structures, preconditioners and the linear solvers. In the data structure, these are replaced by quantum memory or quantum states: the information about the mesh grid as the input, all vectors that are involved in the linear equations. In the iteration of the time integration, the preconditioners and the linear solvers of the equations are replaced by a quantum preconditioner and a linear solver. We do not change the problem model, the mesh settings, the time integration and the iteration. As the result, the time complexity of our algorithm is proportional to log⁡N, where N denotes the mesh number. The qubit number is also proportional to log⁡N. Besides the effect of the mesh number, both the complexity and the qubit number is affected by the precision ϵ. The conditional number and the sparsity are considered as a constant because it will not change greatly in this problem.
+Here we introduce our algorithm. The modules that we replace are data structures used and methods called in the class CFluidIteration. In the data structure, these are replaced by quantum memory or quantum states: including the information about the mesh grid and all vectors that are involved in the linear equations. In the process of the time integration, the linear solver is replaced by a quantum version. And in other pro- and post-processing parts, they are completely replaced by quantum arithmetic modules to form the oracle necessary in the quantum linear solver.
 
-Besides the algorithm detail, we will discuss the difficulties of the problem. One is that we prove that it is necessary to include the quantum random access memory (QRAM), without which quantum speed up will not be achieved. Another is that the qubit should be fault tolerant logical qubit, because the requirements of the gate number and the state storage time greatly exceed any limit of the near-future NISQ device.
+Besides, we do not change the problem model, the mesh setting and the FVM method, including the iteration process of the time integration.
 
+As the result, the time complexity of our algorithm is proportional to $\log⁡ N$, where N denotes the mesh number. The qubit number is also proportional to $\log⁡ N$. Besides the effect of the mesh number, both the complexity and the qubit number are affected by the precision $\epsilon$. We also dicussed the conditional number and the sparsity. They affect the time complexity, however, they are considered as a constant in the problem because they will not change greatly.
 
+Along with the algorithm detail, we also discuss the difficulties of the problem. One is that we prove that it is necessary to include the quantum random access memory (QRAM), without which quantum speed up will not be achieved. Another is that the qubit should be fault-tolerant logical qubit, because the requirements of the gate number and the state storage time greatly exceed any limit of the near-future NISQ device.
 
-\section{Submission Summary (layman terms)[2-3 pages]}
+\section{Submission Summary}
 
 \subsection{Overall algorithm summary}
 
-\subsubsection{Replacement of the SU2} 
+\subsubsection{Replacement of the SU2 submodule} 
 
-submodule SU2 is an open-source fluid dynamics solver. We study its $SU2\_CFD$ module to solve the computational fluid dynamic problem and the target is to replace some modules in the classical solver by quantum subprocess to form a quantum-classical hybrid software, finally to demonstrate the quantum speed-up. Except for the assistive modules to parse the input file or display the results, the $SU2\_CFD$ solver mainly includes 1 class of solver and 3 classes of data structures:
+SU2 is an open-source fluid dynamics solver. We study its SU2\_CFD module to solve the computational fluid dynamic problem and the target is to replace some modules in the classical solver by quantum subprocess to form a quantum-classical hybrid software, finally to demonstrate the quantum speed-up. Here is the modules we replace in the SU2 solver.
 
-Process: class CSolver
-Data Structure: class CConfig, CGeometry and CNumerics
+Process: MultiGrid_Cycle and Preprocessing in the CFluidIteration.
+
+Data Structure: class CGeometry and CNumerics
+
 \begin{figure*}[htbp]
     \subfigure{\includegraphics[width=0.95\textwidth]{Fig/SU2_process.png}}
      \caption{SU2 modules.}
     \label{SU2modules}
 \end{figure*}
 
+The preprocessing in the CMultiGridIntegration includes the preprocess about the generation of the linear problem. This part is replaced by quantum arithmetic and calling to the oracle holding the data of the mesh information. The final target, similar to the classical process, is to generate the quantum data needed in the next step: Quantum linear solver.
 
-The preconditioner and linear solver in the CSolver class are replaced by the quantum process. As the result, the corresponding data structures should be replaced by the quantum data (quantum memory). It includes the mesh settings and the interval vectors. The iteration loop in the CSolver class is not replaced by any quantum process.
+MultiGrid_Cycle calls the TimeIntegration method in the CMultiGridIntegration, which is replaced by quantum linear solver. The quantum linear solver is exponentially faster than the classical counterpart. The SpaceIntegration is no longer needed because it is automatically handled by the quantum parallism.
+
+The preprocessing in the CFluidIteration handles the result after the MultiGrid_Cycle, generates the data for the next iteration, and displays the result. This module is replaced by a quantum postprocess, which aims to add the variation to the vector and to prepare the next iteration. 
 
 % Our algorithm is a quantum version of  finite volume method in CFD problem. We use quantum circuit to realize linear equations construction and solution process. In this section, we show the whole process of our algorithm. The flow chart is shown in fig.~\ref{CfdFlowChart}
 \begin{figure}[htbp]

@@ -5,3 +5,6 @@ cfd_aps.fdb_latexmk
 cfd_aps.synctex.gz
 cfd_aps.pdf
 cfd_apsNotes.bib
+cfd_aps.synctex(busy)
+cfd_aps.blg
+cfd_aps.bbl
