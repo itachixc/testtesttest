@@ -180,7 +180,7 @@ It is unclear whether the time integration can be cancelled to avoid the iterati
 
 \subsubsection{Quantum Linear Solver}
 
-We here use the quantum linear solver as the accelerator of the calculation. The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The algorithm solves the linear equation $Ax = b$, which requires $O((s log⁡N)/\epsilon)$ oracle query and has the successful rate with $O(1/d)$ where N represents the dimension of the equation, s the sparsity of the matrix, $\epsilon$ the target precision, and d the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works. In these works, the complexity dependencies on the precision, conditional number are changed from linear to logarithm. The works introduces a method of linear combination of the operators, which are inspired by the previous works about the duality quantum computing framework established by Long.
+We here use the quantum linear solver as the accelerator of the calculation. The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The algorithm solves the linear equation $Ax = b$, which requires $O((d log⁡N)/\epsilon)$ oracle query and has the successful rate with $O(1/\kappa)$ where N represents the dimension of the equation, $d$ the sparsity of the matrix, $\epsilon$ the target precision, and $\kappa$ the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works. In these works, the complexity dependencies on the precision, conditional number are changed from linear to logarithm. The works introduces a method of linear combination of the operators, which are inspired by the previous works about the duality quantum computing framework established by Long.
 
 The solver requires an efficient quantum representation of the matrix A and constant b. In this problem, the set of the partial derivative equations should be linearized to generate the expression of A and b. We here have
 
@@ -203,7 +203,17 @@ where $M$ denotes the given information of the mesh grid. In each iteration step
 
 \subsubsection{Overall Complexity}
 
-QRAM is necessary in model to demonstrate quantum speed up. We use QRAM in three procedures. First is to store the information about the mesh grid. Second is to store the interval results of the solver. Third is to help recover from the probabilistic error of performing a non-unitary transformation.
+QRAM is necessary in model to demonstrate quantum speed up. We use QRAM in three procedures. First is to store the information about the mesh grid. Second is to store the interval results of the solver. Third is to help recover from the probabilistic error of performing a non-unitary transformation. Here we list the qubit,query and gate complexity of the whole process of our algorithm: the required qubit number is
+$$
+O(qnum)=O(2log(4N)+log(d\kappa log(d\kappa/\epsilon)))
+$$. 
+The QRAM and oracle query complexity is 
+$$O(query)=O(d\kappa^2log^2(d\kappa/\epsilon))$$.
+The gate complexity is 
+$$
+O(d\kappa^2log^2(d\kappa/\epsilon)\times poly(log(4N)/\epsilon))
+$$
+In Sec.~\ref{detail}, we will analyze in detail the complexity of each module of our algorithm.
 
 %\subsubsection{Improvement for mesh generation}
 
@@ -237,7 +247,7 @@ Advantages
 
 
 
-\section{Detailed Explanation}
+\section{Detailed Explanation}\label{detail}
 In this section, we use the following symbols:
 
 $N$: grid number
