@@ -237,13 +237,21 @@ The classical problem has linear complexity, which greatly constrains the design
 
 It is already known that, if someone wants to fully convert components in quantum states to a classical memory, it uses at least $O(n)$ times. The pure classical solver uses time integration, an iteration process being necessary. If the result is stored in the quantum states with any quantum solver, and we expect data transferred between each step of the iteration are classical, the “quantum-classical converter” process is inevitable and $O(n)$ time is consumed, and no acceleration exists (second case in the table).
 
-For the fourth case of the table, we declare it impossible to implement such a plan in real. The problem is the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As we have mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we will prove formally that this process cannot be implemented by a linear operator, which is considered as fundamental for the quantum mechanics. The proof is written in the section 3.1.
+For the fourth case of the table, we declare it impossible to implement such a plan in real. The problem is the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As we have mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we will prove formally that this process cannot be implemented by a linear operator, which is considered as fundamental for the quantum mechanics. The proof is written in the Supplementary Information.
 
-\subsubsection{Advantages of the Algorithm}
+% \begin{tabular}{|l|c|c|c|r|} %l(left)居左显示 r(right)居右显示 c居中显示
+% 	\hline 
+% 	Iteration&Equation Solver&Data Between Each Step&Slowest Sub-procedure&Time complexity (n denotes the number of mesh grid)\\
+% 	\hline  
+% 	Yes&Classical&Classical&Multigrid Linear Equation Solver&$O(n)$\\
+% 	\hline 
+% \end{tabular}
 
-Advantages
+% \subsubsection{Advantages of the Algorithm}
 
-\subsubsection{Drawbacks of the Algorithm}
+% Advantages
+
+% \subsubsection{Drawbacks of the Algorithm}
 
 
 
@@ -705,16 +713,19 @@ Because of $\left\|S_{var}\right\|\leq d$, we could construct a method to elimin
 Then we could eliminate at least $N/d$ entries of the last row of $\mathcal{A^{\prime}}$. Continue using equations without the $N/d$ variables to eliminate other entries. Finally, the number of nonzero entries in the last row would turn to $O(\sqrt{N})$, while $N$ is large enough.
 \fi
 
-
-
-\section{Numerical Result}
-\newpage
-
-
-
 \section{Conclusion}
-Conclusion
 
+In this paper, we are answering the problem set 2: The Computational Fluid Dynamics. Our task is to replace some certain modules in the SU2 CFD Solver with quantum modules, forming a quantum-classical hybrid approach. The original classical solver uses Finite Volume Method, along with the iteration on time integration to obtain the result of the fluid equations. By multigrid method, the classical has the $O(n)$ complexity between each iteration steps, where n denotes the number of mesh grids. Therefore, quantum solver must have sublinear time complexity to observe the quantum speed-up.
+
+We here use the quantum linear solver to accelerate the solution of the linear equations. In order to prepare all the data needed by the quantum linear solver, we choose to replace the core procedures in the CFluidIteration process. One is the MultiGrid\_Cycle, including the preprocessing and the equation solving, fully replaced by a quantum process. Another is the Preprocessing part, which links the data between two iteration steps, also replaced by a quantum process. Naturally, classical data is replaced by quantum data. The input mesh info should be made as a QRAM, which is frequently used in preprocessor. Most of the internal data during the calculation are no longer needed, because they are saved in quantum registers. The configuration data of the whole problem are considered as constants, which are used to generate the quantum program directly.
+
+We finally obtain the time complexity of $O(\log N)$ with N the mesh number, exponential faster than the classical counterpart. The requirement of the qubit number, with ancillary qubit taken into consideration, is also $O(\log N)$ in our algorithm.
+
+We declare our plan have three advantages. First, without changing the problem model, we realize exponential quantum speedup in this problem. Second, we fully discover the program of the SU2, properly finding the replacement that we have to do, implementing our algorithm with QPanda quantum programming framework and obtaining numerical results. These work infers that it is possible to realize our full plan in the future. Third, we do not ignore the quantum-classical data conversion interface problem, which we thought would be a blind point of many other plans, because What we are solve is a realistic problem. Our assumptions on the conversion between the quantum and the classical data are all have some base works. Besides, we made a proof on this problem, by showing the necessity of the QRAM and other assumputions, without which quantum speedup would never be achieved.
+
+There are also drawbacks of our plan. First, the complexity of the quantum program, although growing with logarithm on the mesh number, is greatly exceeding any limit of the near-term quantum devices. That is, fault-tolerant quantum computing scheme must be realized to solve this problem. Second, our plan did not discuss the realizability of the QRAM, which we thought is not our task.
+
+In conclusion, the computational fluid dynamics problem is possible to achieve speed-up with a fault tolerant quantum computer using our plan. We replace several modules in SU2 to adapt the quantum computer and classical computer, finally obtaining the complexity of both time and qubit resource with $O(\log N)$. We hope our work would be a guide to the future research of the application of quantum computing on the realistic problems.
 
 
 % \section{Supplementary information}
