@@ -133,9 +133,7 @@ Quantum computing has “quantum parallism”. An n-qubit quantum state is a vec
 
 Computational Fluid Dynamics (CFD) problems are often related to solving a series of equations in numerical methods. Here we do not introduce the classical CFD method. But we need to mention that a CFD solver needs to do time integration on the partial derivative equations, so that it needs to iterate with a $\Delta t$ to calculate a small evolution of the system, and finally stops when the system goes stable. In this problem set, we should understand the SU2 solver and try to replace some modules with quantum subroutines, (a.k.a. quantum-classical hybrid approach,) to seek quantum speed-up in this problem.
 
-Here we introduce our algorithm. The modules that we replace are data structures used and methods called in the class CFluidIteration. In the data structure, these are replaced by quantum memory or quantum states: including the information about the mesh grid and all vectors that are involved in the linear equations. In the process of the time integration, the linear solver is replaced by a quantum version. And in other pro- and post-processing parts, they are completely replaced by quantum arithmetic modules to form the oracle necessary in the quantum linear solver.
-
-Besides, we do not change the problem model, the mesh setting and the FVM method, including the iteration process of the time integration.
+Here we introduce our algorithm. The modules that we replace are data structures used and methods called in the class CFluidIteration. In the data structure, these are replaced by quantum memory or quantum states: including the information about the mesh grid and all vectors that are involved in the linear equations. In the process of the time integration, the linear solver is replaced by a quantum version. And in other pro- and post-processing parts, they are completely replaced by quantum arithmetic modules to form the oracle necessary in the quantum linear solver. Besides, we do not change the problem model, the mesh setting and the FVM method, including the iteration process of the time integration. 
 
 As the result, the time complexity of our algorithm is proportional to $\log⁡ N$, where N denotes the mesh number. The qubit number is also proportional to $\log⁡ N$. Besides the effect of the mesh number, both the complexity and the qubit number are affected by the precision $\epsilon$. We also dicussed the conditional number and the sparsity. They affect the time complexity, however, they are considered as a constant in the problem because they will not change greatly.
 
@@ -255,7 +253,6 @@ Yes&Quantum&Quantum&Impossible to implement (Without QRAM)&$-$\\
 \hline 
 \end{tabular} }
 \end{table*}
-
 
 % \subsubsection{Advantages of the Algorithm}
 
