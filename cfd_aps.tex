@@ -149,9 +149,7 @@ Along with the algorithm detail, we also discuss the difficulties of the problem
 
 \section{Submission Summary}
 
-\subsection{Overall algorithm summary}
-
-\subsubsection{Replacement of the SU2 submodule}
+\subsection{Replacement of the SU2 submodule}
 
 SU2 is an open-source fluid dynamics solver. We study its SU2\_CFD module to solve the computational fluid dynamic problem and the target is to replace some modules in the classical solver by quantum subprocess to form a quantum-classical hybrid software, finally to demonstrate the quantum speed-up. Here is the modules we replace in the SU2 solver.
 
@@ -171,6 +169,32 @@ MultiGrid\_Cycle calls the TimeIntegration method in the CMultiGridIntegration, 
 
 The preprocessing in the CFluidIteration handles the result after the MultiGrid\_Cycle, generates the data for the next iteration, and displays the result. This module is replaced by a quantum postprocess, which aims to add the variation to the vector and to prepare the next iteration. 
 
+\subsection{Overview of the algorithm}
+
+\begin{figure}[htbp]
+	\subfigure{\includegraphics[width=0.45\textwidth]{Fig/QuantumProcess.png}}
+    \caption{Processes in an iteration step}
+    \label{QuantumProcess1} 
+\end{figure}
+
+As in Fig. 1, we marked the modules that we replace in our algorithm. With corresponding to the Fig. 2, the yellow part is replaced by the Quantum Preprocessing, the violet by the Quantum Linear Solver and the red by the Quantum PostProcessing. The quantum processes in each iteration step are doing a step of the time integration of $\Delta t$, with inputting $\vec{u}^i$ and outputting $\vec{u}^{i+1}$. We here have
+$$
+u^0=u^0(initializer)
+$$
+$$
+A=A(\vec{U}^{i-1},\hat{M})
+$$
+$$
+x=\Delta \vec{U}^i
+$$
+$$
+b=b(\vec{U}^{i-1},\hat{M})
+$$
+$$
+\vec{U}^i=\vec{U}^{i-1}+\Delta \vec{U}^i
+$$
+where $M$ denotes the given information of the mesh grid. In each iteration step, the coefficient matrix and the constant vector of the linear equation are related to the solution of the previous step. 
+
 \subsection{Comparing quantum approach with classical approach}
 
 \subsubsection{Classical Solver}
@@ -178,7 +202,7 @@ The preprocessing in the CFluidIteration handles the result after the MultiGrid\
 The implicit Euler solver has the linear complexity. We declare this result with two proofs: in both theory and experiment. The theory shows that the classical solver uses multigrid method, which are expected to have the complexity $O(n)$ where $n$ denotes the number of mesh grids. We also did experiment on various grid size and calculates the running time (except the preparation). As the figure shows, that running time has a very good linearity to the mesh number.
 \begin{figure} 
 \centering
-\includegraphics[width=.48\linewidth]{Fig/su2_speed.png}
+\includegraphics[width=0.45\textwidth]{Fig/su2_speed.png}
 \caption{SU2 running time.} \label{su2Speed}
 \end{figure}
 
@@ -188,24 +212,7 @@ It is unclear whether the time integration can be cancelled to avoid the iterati
 
 We here use the quantum linear solver as the accelerator of the calculation. The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The algorithm solves the linear equation $Ax = b$, which requires $O((d log⁡N)/\epsilon)$ oracle query and has the successful rate with $O(1/\kappa)$ where N represents the dimension of the equation, $d$ the sparsity of the matrix, $\epsilon$ the target precision, and $\kappa$ the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works. In these works, the complexity dependencies on the precision, conditional number are changed from linear to logarithm. The works introduces a method of linear combination of the operators, which are inspired by the previous works about the duality quantum computing framework established by Long.
 
-The solver requires an efficient quantum representation of the matrix A and constant b. In this problem, the set of the partial derivative equations should be linearized to generate the expression of A and b. We here have
-
-$$
-u^0=u^0(initializer)
-$$
-$$
-A=A(u^{i-1},M)
-$$
-$$
-x=\Delta u^i
-$$
-$$
-b=b(u^{i-1},M)
-$$
-$$
-u^i=u^{i-1}+\Delta u^i
-$$
-where $M$ denotes the given information of the mesh grid. In each iteration step, the coefficient matrix and the constant vector of the linear equation are related to the solution of the previous step.
+The solver requires an efficient quantum representation of the matrix A and constant b. In this problem, the set of the partial derivative equations should be linearized to generate the expression of A and b.
 
 \subsubsection{Overall Complexity}
 
@@ -221,46 +228,51 @@ O(d\kappa^2log^2(d\kappa/\epsilon)\times poly(log(4N)/\epsilon))
 $$
 In Sec.~\ref{detail}, we will analyze in detail the complexity of each module of our algorithm.
 
-%\subsubsection{Improvement for mesh generation}
-
-\subsection{Relation to QRAM: The Main Difficulties of the Problem}
-
-\subsubsection{QRAM}
-
-QRAM is a quantum analogue to the classical Random Access Memory (RAM). QRAM enables the user obtaining the data in the QRAM efficiently while the address is given in the superposition state. 
-$$
-QRAM: \sum_i{|i\rangle|0\rangle}=\sum_i{|i\rangle|U_i\rangle}
-$$
-The $U_i$ denotes the classical data encoded in the quantum states.
-
-There were several QRAM models proposed in the previous works. A typical one is to implement the QRAM by a set of optical devices, requiring O(log N) operations (N denotes the memory length). Another more straightforward approach is to realize it with the decomposition of the quantum circuits. However, although the addressing part is realized in O(log N), the state generation part involves O(N) multi-controlled NOT gates, which should not be considered as an efficient plan.
-
-We will introduce an efficiently QRAM only requiring O(log N) operations in our plan. We have to mention that the QRAM is never fabricated in real, which will be one of the drawbacks.
-
-\subsubsection{Overall Complexity without QRAM }
-
-The classical problem has linear complexity, which greatly constrains the design of the quantum methods, especially quantum-classical hybrid methods. 
-
-It is already known that, if someone wants to fully convert components in quantum states to a classical memory, it uses at least $O(n)$ times. The pure classical solver uses time integration, an iteration process being necessary. If the result is stored in the quantum states with any quantum solver, and we expect data transferred between each step of the iteration are classical, the “quantum-classical converter” process is inevitable and $O(n)$ time is consumed, and no acceleration exists (second case in the table.~\ref{tab2}).
-
-For the fourth case of the table.~\ref{tab2}, we declare it impossible to implement such a plan in real. The problem is the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As we have mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we will prove formally that this process cannot be implemented by a linear operator, which is considered as fundamental for the quantum mechanics. The proof is written in the Supplementary Information.
 \begin{table*}
-\caption{Comparison of quantum approach and classical approach}\label{tab2}
-\resizebox{\textwidth}{!}{ \begin{tabular}{|c|c|c|c|c|}
-\hline 
-Iteration&Equation Solver&Data Between Each Step&Slowest Sub-procedure&Time complexity \\
- & & & &(n denotes the number of mesh grid)\\
-\hline  
-Yes&Classical&Classical&Multigrid Linear Equation Solver&$O(n)$\\
-\hline 
-Yes&Quantum&Classical&Quantum Classical Converter&$O(n)$\\
-\hline 
-Yes&Quantum&Quantum&Quantum Linear System Solver (With QRAM)&$O(log(n))$\\
-\hline 
-Yes&Quantum&Quantum&Impossible to implement (Without QRAM)&$-$\\
-\hline 
-\end{tabular} }
+	\caption{Comparison of quantum approach and classical approach}\label{tab2}
+	\resizebox{\textwidth}{!}{ \begin{tabular}{|c|c|c|c|c|}
+	\hline 
+	Iteration&Equation Solver&Data Between Each Step&Slowest Sub-procedure&Time complexity \\
+	 & & & &(n denotes the number of mesh grid)\\
+	\hline  
+	Yes&Classical&Classical&Multigrid Linear Equation Solver&$O(n)$\\
+	\hline 
+	Yes&Quantum&Classical&Quantum Classical Converter&$O(n)$\\
+	\hline 
+	Yes&Quantum&Quantum&Quantum Linear System Solver (With QRAM)&$O(log(n))$\\
+	\hline 
+	Yes&Quantum&Quantum&Impossible to implement (Without QRAM)&$-$\\
+	\hline 
+	\end{tabular} }
 \end{table*}
+
+\subsection{Improvement for mesh generation}
+Besides the acceleration in the time integration process, the mesh generation module can also be integrated in the quantum computer.
+
+In the above algorithm, we considered the mesh information as the oracle. A direct way is to generate the mesh file beforehand, and encode the classical data into the quantum computer. This way may cause a time complexity of $O(N)$. Instead of reading a pre-generated mesh file, we could replace the mesh generation program by a quantum algorithm. This method will be discussed in the detailed explanation.
+
+\subsection{Assumptions on the Future Quantum Computer}
+
+To realize our quantum approach and the effect of the acceleration, we claim that several assumptions must be made on the future quantum computer.
+
+\subparagraph{Fault-Tolerance}
+Our algorithm accelerates the calculation in each iteration step, however, the number of iteration, as we investigated, would be much bigger when the number of the mesh grows. We do not perform quantum measurements to extract the result in each step. Instead, the quantum feature (entanglement, superposition) should be preserved during the whole calculation process. 
+
+This feature of the algorithm implies the storage of the quantum state is not affected by the decoherence and noise. Only a fault-tolerant quantum computer can meet this demand.
+
+\subparagraph{Quantum Random Access Memory}
+The quantum-classical hybrid algorithms are always facing the problem of the data conversion between the classical and the quantum.
+
+The problem is what the time complexity is to perform such conversions:
+$$ \sum|addr\rangle|data\rangle\ (Quantum\ Memory) $$
+and (classical memory written in C++ form)
+$$ \text{vector<complex<double> > data}\ (Classical\ Memory) $$
+
+A trivial way of the quantum-to-classical is to do with repeatedly measurements, or as people always mention "quantum tomography". The trivial classical-to-quantum is to encode the state preparation phase in the quantum circuit by using a group of controlled rotation operations. These ways are trivial because they consume $O(2^n)$ time, while we think it is not efficient. If the quantum-classical conversion is not implemented efficiently, many quantum algorithms will never realize the sublinear time complexity, because the input and the output will at least consume linear time.
+
+To solve this problem, we have to assume the existence of the quantum random access memory (QRAM). The QRAM is a structure where we could save and load quantum information efficiently. Different as the trivial way, the QRAM operates the address in the superposition. It enables the digital form quantum data (compared to the analog form, as described in Supplementary Chapter QDAC/QADC) to be loaded and stored in parallel with the time complexity $O(log N)$.
+
+Although the concept of the QRAM is proposed early and many works were based on this model, it is controversial whether a QRAM could exist, because the architecture of the QRAM remains an open question. We take this risk because we believe that if quantum computer wants to solve a realistic problem with sublinear complexity, the QRAM must exists. We will prove that this problem would not be sublinear without QRAM.
 
 % \subsubsection{Advantages of the Algorithm}
 
@@ -528,7 +540,85 @@ And we realize $O_A$, the corresponding quantum circuit is shown in fig.~\ref{OA
 \end{figure}
 In this process,the number of times $M_U$, $O_{adjacent}$ and $O_{coor}$ are used is $O(1)$. The required qubit number is $2m+C_Aq_f$, $C_Aq_f$ is a ancilla qubit sequence used to compute $A_{ij}$. The gate complexity is $O(poly(m))$. $A_{ij}$'s expression is more complicated than $b_i$, so $C_A>=C_b$, the qubit number used in $O_l,O_b,O_A$ is $2m+C_Aq_f$.
 
+\subsection{necessity of QRAM}
+\noindent Proposition I：Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
+linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle$.
 
+\noindent Pf: 1.Necessity：Let $\left|\phi_i\right\rangle = \sum_{j=1}^n \left|x_{ij}\right\rangle$. If there exists linear transformation $A$ s.t.
+\begin{align*}
+A\left|\phi_i\right\rangle = \sum_{i=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
+\end{align*}
+then
+\begin{align*}
+A\sum_{i=1}^{n}\left|\phi_i\right\rangle = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
+\end{align*}
+Rearrange the terms. We have: 
+\begin{align*}
+LHS = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)\right\rangle = RHS
+\end{align*}
+Therefore，for all $\left(i, j\right) \in \left[1, n\right]\times\left[1, n\right]$, 
+\begin{align*}
+f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)
+\end{align*}
+1)While $i=j$, $f_{i}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1i}, x_{2i}, ..., x_{ni}\right)$, i.e., 
+\begin{align*}
+f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
+\end{align*}
+2)While $i\neq j$, $f_j\left(x_{ij}\right) = f_i\left(x_{ij}\right)$, i.e., 
+\begin{align*}
+f_i\left(u\right) = f\left(u\right)
+\end{align*}
+Above all, 
+\begin{align*}
+A\sum_{i=1}^{n}\left|u_i\right\rangle = \sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle
+\end{align*}
+
+2.Sufficiency: Obvious.
+
+\noindent Proposition II：Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
+linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle$.
+
+\noindent Pf: 1.Necessity：Let $S_n$ be the set of all cycle notations of permutation $\left(1, 2, ..., n\right)$. If there exists linear transformation $A$ s.t. 
+\begin{align*}
+	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_1, u_2, ..., u_n\right)\right\rangle
+\end{align*}
+then, for all $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
+\begin{align*}
+	A\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
+\end{align*}
+Therefore,  
+\begin{align*}
+	&A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle \\
+	&=\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
+\end{align*}
+And
+\begin{align*}
+	LHS &= A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|j_i\right\rangle\left|u_i\right\rangle\\
+	&= A\sum_{i=1}^n\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\left|j_i\right\rangle\left|u_i\right\rangle\\
+	&= A\sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle \\
+	&= \sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle\left|f_{k}\left(u_i, u_i, ..., u_i\right)\right\rangle\\
+	&= \sum_{k=1}^n\sum_{i=1}^n\left|i\right\rangle\left|u_k\right\rangle\left|f_{i}\left(u_k, u_k, ..., u_k\right)\right\rangle \\
+	&= \sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)\right\rangle\\
+	&= RHS
+\end{align*}
+Corresponding items must be equal to each other, that is, for all $i \in \left[1, n\right]$ and $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
+\begin{align*}
+	f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right) = f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)
+\end{align*}
+i.e.，for any $i\neq j$
+\begin{align*}
+	\frac{\partial f_i\left(u_1, u_2, ..., u_n\right)}{\partial u_j} = 0
+\end{align*}
+in other, 
+\begin{align*}
+	f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
+\end{align*}
+Hence $A$ should meet the condition: 
+\begin{align*}
+	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle
+\end{align*}
+
+2.Sufficiency: Obvious.
 
 \subsection{Quantum Linear Solver}
 
@@ -727,6 +817,25 @@ Because of $\left\|S_{var}\right\|\leq d$, we could construct a method to elimin
 
 Then we could eliminate at least $N/d$ entries of the last row of $\mathcal{A^{\prime}}$. Continue using equations without the $N/d$ variables to eliminate other entries. Finally, the number of nonzero entries in the last row would turn to $O(\sqrt{N})$, while $N$ is large enough.
 \fi
+
+
+\subsection{Relation to QRAM: The Main Difficulties of the Problem}
+
+QRAM is a quantum analogue to the classical Random Access Memory (RAM). QRAM enables the user obtaining the data in the QRAM efficiently while the address is given in the superposition state. 
+$$
+QRAM: \sum_i{|i\rangle|0\rangle}=\sum_i{|i\rangle|U_i\rangle}
+$$
+The $U_i$ denotes the classical data encoded in the quantum states.
+
+There were several QRAM models proposed in the previous works. A typical one is to implement the QRAM by a set of optical devices, requiring O(log N) operations (N denotes the memory length). Another more straightforward approach is to realize it with the decomposition of the quantum circuits. However, although the addressing part is realized in O(log N), the state generation part involves O(N) multi-controlled NOT gates, which should not be considered as an efficient plan.
+
+We will introduce an efficiently QRAM only requiring O(log N) operations in our plan. We have to mention that the QRAM is never fabricated in real, which will be one of the drawbacks.
+
+\subparagraph{Overall Complexity without QRAM} The classical problem has linear complexity, which greatly constrains the design of the quantum methods, especially quantum-classical hybrid methods. 
+
+It is already known that, if someone wants to fully convert components in quantum states to a classical memory, it uses at least $O(n)$ times. The pure classical solver uses time integration, an iteration process being necessary. If the result is stored in the quantum states with any quantum solver, and we expect data transferred between each step of the iteration are classical, the “quantum-classical converter” process is inevitable and $O(n)$ time is consumed, and no acceleration exists (second case in the table.~\ref{tab2}).
+
+For the fourth case of the table.~\ref{tab2}, we declare it impossible to implement such a plan in real. The problem is the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As we have mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we will prove formally that this process cannot be implemented by a linear operator, which is considered as fundamental for the quantum mechanics. The proof is written in the Supplementary Information.
 
 \section{Conclusion}
 
@@ -971,83 +1080,6 @@ In conclusion, the computational fluid dynamics problem is possible to achieve s
 
 
 
-% \subsection{necessity of QRAM}
-% \noindent Proposition I：Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
-% linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle$.
-
-% \noindent Pf: 1.Necessity：Let $\left|\phi_i\right\rangle = \sum_{j=1}^n \left|x_{ij}\right\rangle$. If there exists linear transformation $A$ s.t.
-% \begin{align*}
-% A\left|\phi_i\right\rangle = \sum_{i=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
-% \end{align*}
-% then
-% \begin{align*}
-% A\sum_{i=1}^{n}\left|\phi_i\right\rangle = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
-% \end{align*}
-% Rearrange the terms. We have: 
-% \begin{align*}
-% LHS = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)\right\rangle = RHS
-% \end{align*}
-% Therefore，for all $\left(i, j\right) \in \left[1, n\right]\times\left[1, n\right]$, 
-% \begin{align*}
-% f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)
-% \end{align*}
-% 1)While $i=j$, $f_{i}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1i}, x_{2i}, ..., x_{ni}\right)$, i.e., 
-% \begin{align*}
-% f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
-% \end{align*}
-% 2)While $i\neq j$, $f_j\left(x_{ij}\right) = f_i\left(x_{ij}\right)$, i.e., 
-% \begin{align*}
-% f_i\left(u\right) = f\left(u\right)
-% \end{align*}
-% Above all, 
-% \begin{align*}
-% A\sum_{i=1}^{n}\left|u_i\right\rangle = \sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle
-% \end{align*}
-
-
-% 2.Sufficiency: Obvious.\\
-
-% \noindent Proposition II：Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
-% linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle$.
-
-% \noindent Pf: 1.Necessity：Let $S_n$ be the set of all cycle notations of permutation $\left(1, 2, ..., n\right)$. If there exists linear transformation $A$ s.t. 
-% \begin{align*}
-% 	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_1, u_2, ..., u_n\right)\right\rangle
-% \end{align*}
-% then, for all $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
-% \begin{align*}
-% 	A\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
-% \end{align*}
-% Therefore,  
-% \begin{align*}
-% 	&A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle \\
-% 	&=\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
-% \end{align*}
-% And
-% \begin{align*}
-% 	LHS &= A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|j_i\right\rangle\left|u_i\right\rangle = A\sum_{i=1}^n\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\left|j_i\right\rangle\left|u_i\right\rangle\\
-% 	&= A\sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle = \sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle\left|f_{k}\left(u_i, u_i, ..., u_i\right)\right\rangle\\
-% 	&= \sum_{k=1}^n\sum_{i=1}^n\left|i\right\rangle\left|u_k\right\rangle\left|f_{i}\left(u_k, u_k, ..., u_k\right)\right\rangle \\
-% 	&= \sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)\right\rangle = RHS
-% \end{align*}
-% Corresponding items must be equal to each other, that is, for all $i \in \left[1, n\right]$ and $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
-% \begin{align*}
-% 	f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right) = f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)
-% \end{align*}
-% i.e.，for any $i\neq j$
-% \begin{align*}
-% 	\frac{\partial f_i\left(u_1, u_2, ..., u_n\right)}{\partial u_j} = 0
-% \end{align*}
-% in other, 
-% \begin{align*}
-% 	f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
-% \end{align*}
-% Hence $A$ should meet the condition: 
-% \begin{align*}
-% 	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle
-% \end{align*}
-
-% 2.Sufficiency: Obvious.\\
 
 \bibliography{cfd_aps}
 \end{document}
