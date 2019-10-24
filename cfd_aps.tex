@@ -277,30 +277,9 @@ In this section, we use the following symbols:
 
 An important applicaiton of modern Computational Fluid Dynamics (CFD) is to simulate systems in aircraft aerodynamic design. The usual classical algorithm often means high complexity, which forces us in seeking for more effective computations, e.g., a quantum-hybrid solution.
 
-For briefness, we assumed the flow to be 2D, inviscid and steady, then gained Euler equations, a special form of the Navier-Stokes equation:
-\begin{equation}
-\left\{
-\begin{array}{ccc}
-	\frac{\partial \rho u}{\partial x} + \frac{\partial \rho v}{\partial y} & = & 0\\
-	\rho u \frac{\partial u}{\partial x} + \rho v \frac{\partial u}{\partial y} & = & -\frac{\partial p}{\partial x}\\
-	\rho u \frac{\partial v}{\partial x} + \rho v \frac{\partial v}{\partial y} & = & -\frac{\partial p}{\partial y}\\
-	\rho u \frac{\partial H}{\partial x} + \rho v \frac{\partial H}{\partial y} & = & 0
-\end{array}
-\right.
-\end{equation}
-
-In these equations, we have the density $\rho$, the momentum $\rho\bm{V}=\left(\rho u, \rho v\right)$ and the enthalpy $H$, which were defined below:
-\begin{equation}
-\left\{
-\begin{array}{ccc}
-	H & = & c_p T + \frac{1}{2}\left(u^2 + v^2\right)\\
-	p & = & \rho R T
-\end{array}
-\right.
-\end{equation}
-where $c_p = 1005 m^2 s^{-2} K^{-1}$ and $R = 287 m^2 s^{-2} K^{-1}$ are thermodynamical constants. The solution can also be considered as the stable situation of these equations \cite{hirsch2007numerical}:
+For briefness, we assumed the flow to be 2D, inviscid and steady, then gained the Euler equation \cite{euler1757principes}, a special form of the Navier-Stokes equations:
 \begin{align}\label{eq:differential_equation}
-	\frac{\partial U}{\partial t} + \nabla \cdot \bm{F} = 0
+\frac{\partial U}{\partial t} + \nabla \cdot \bm{F} = 0
 \end{align}
 \begin{equation}
 \begin{array}{ccc}
@@ -332,16 +311,27 @@ U = \left[
 \right]
 \end{array}
 \end{equation}
-\begin{align}
+
+In these equations, we have the density $\rho$, the momentum $\rho\bm{V}=\left(\rho u, \rho v\right)$, the enthalpy $H$ and so on, which were defined below:
+\begin{equation}
+\left\{
+\begin{array}{l}
+	H =  c_p T + \frac{1}{2}\left(u^2 + v^2\right)\\
+	\\
+	p =  \rho R T\\
+	\\
 	E = \left(c_p - R\right) T + \frac{1}{2}\left(u^2 + v^2\right) = \frac{R T}{\gamma - 1} + \frac{1}{2}\left(u^2 + v^2\right)
-\end{align}
+\end{array}
+\right.
+\end{equation}
+where $c_p = 1005 m^2 s^{-2} K^{-1}$ and $R = 287 m^2 s^{-2} K^{-1}$ are thermodynamical constants.
 
 For any volume $\Omega$ and its boundary $\partial\Omega$, Formula.\ref{eq:differential_equation} shows:
 \begin{align}\label{eq:integral_equation}
 	\frac{\partial}{\partial t}\int_\Omega U d V + \oint_{\partial \Omega} \bm{F} \cdot d \bm{S} = 0
 \end{align}
 
-One effective approach to solve the equation shown above is the Finite Volume Method (FVM). To solve the partial differential equations(PDE), discretization with numerical grid is necessary. Each spatial point is a node, identified by a set of indices, e.g. $\left(i, j\right)$ in the 2-D case, and several nodes combine a lattice. Midpoints of edges and centerpoints of adjacent lattices define a cell \cite{economon2015su2}. The equation of conservation was applied to each cell of the grid. With discretization of space, the calculus operations in PDE could also be changed to their numerical approximations. We chose implicit Euler scheme to deal with the time differential.
+One effective approach to solve the equation shown above is the Finite Volume Method (FVM) \cite{eymard2000finite}. To solve the partial differential equations (PDE), discretization with numerical grid is necessary. Each spatial point is a node, identified by a set of indices, e.g. $\left(i, j\right)$ in the 2-D case, and several nodes combine a lattice. Midpoints of edges and centerpoints of adjacent lattices define a cell \cite{economon2015su2}. The equation of conservation was applied to each cell of the grid. With discretization of space, the calculus operations in PDE could also be changed to their numerical approximations. We chose implicit Euler scheme to deal with the time differential.
 \begin{figure}[h]
 	\centering  
 	\includegraphics[width=0.7\linewidth]{Fig/grid}
@@ -354,7 +344,7 @@ As illustrated in Figure.\ref{fig:sample_of_cell}, Formula.\ref{eq:integral_equa
 	\frac{\Omega_{i, j}}{\Delta t}\left(U^{n+1}_{i, j}-U^{n}_{i, j} \right) = -\sum_{faces}\bm{F}^{n+1}\cdot\Delta\bm{S}^{n+1} = -R^{n+1}_{i, j}
 \end{align}
 
-Introduced to the concept of artificial dissipation, $\bm{F}^\prime_{i+\frac{1}{2}, j}$ matching with $\Delta\bm{S}^\prime_{i+\frac{1}{2}, j}$ satisfied \cite{hirsch2007numerical} \cite{jameson1981numerical}:
+Introduced to the concept of artificial dissipation by some common method, $\bm{F}^\prime_{i+\frac{1}{2}, j}$ matching with $\Delta\bm{S}^\prime_{i+\frac{1}{2}, j}$ satisfied \cite{hirsch2007numerical} \cite{jameson1981numerical}:
 \begin{align}
 \begin{split}
     \bm{F}^\prime_{i+\frac{1}{2}, j} =& \frac{1}{2}\left(\bm{F}_{i, j} + \bm{F}_{i + 1, j}\right) - \frac{1}{2}\big[\kappa^{\left(2\right)}\left(U_{i+1, j}-U_{i, j}\right)\\
@@ -362,7 +352,8 @@ Introduced to the concept of artificial dissipation, $\bm{F}^\prime_{i+\frac{1}{
     &\times\left[\frac{1}{2}\left(\bm{V}_{i, j} + \bm{V}_{i + 1, j}\right) + \sqrt{\gamma \frac{p}{\rho}}\frac{\Delta\bm{S}^\prime_{i+\frac{1}{2}, j}}{\left|\Delta\bm{S}^\prime_{i+\frac{1}{2}, j}\right|}\right]
 \end{split}
 \end{align}
-where $\kappa^{\left(2\right)}$ and $\kappa^{\left(4\right)}$ are arbitrary non-dimensional coefficients, which we assumed to be $\frac{1}{2}$ and $\frac{1}{64}$.\\
+where $\kappa^{\left(2\right)}$ and $\kappa^{\left(4\right)}$ are arbitrary non-dimensional coefficients, which we assumed to be $\frac{1}{2}$ and $\frac{1}{64}$.
+
 Let $\Delta U^{n}$ be equal to $U^{n+1}-U^{n}$, and consider the $k-th$ components of $U$ \cite{economon2015su2}:
 \begin{align}
 	\left(\frac{\Omega_{i, j}}{\Delta t}\delta_{i, i^\prime}\delta_{j, j^\prime}+\left.\frac{\partial R_{i,j,k}}{\partial U_{i^\prime,j^\prime,k^\prime}}\right|_{U=U^n}\right)\Delta U^{n}_{i^\prime,j^\prime,k^\prime} = -R^{n}_{i,j,k}
@@ -516,11 +507,11 @@ And we realize $O_A$, the corresponding quantum circuit is shown in fig.~\ref{OA
 \end{figure}
 In this process,the number of times $M_U$, $O_{adjacent}$ and $O_{coor}$ are used is $O(1)$. The required qubit number is $2m+C_Aq_f$, $C_Aq_f$ is a ancilla qubit sequence used to compute $A_{ij}$. The gate complexity is $O(poly(m))$. $A_{ij}$'s expression is more complicated than $b_i$, so $C_A>=C_b$, the qubit number used in $O_l,O_b,O_A$ is $2m+C_Aq_f$.
 
-\subsection{necessity of QRAM}
-\noindent Proposition I：Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
+\subsection{Necessity of QRAM}
+\subparagraph{Theorem I} Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
 linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle$.
 
-\noindent Pf: 1.Necessity：Let $\left|\phi_i\right\rangle = \sum_{j=1}^n \left|x_{ij}\right\rangle$. If there exists linear transformation $A$ s.t.
+\subparagraph{Pf:} 1.Necessity: Let $\left|\phi_i\right\rangle = \sum_{j=1}^n \left|x_{ij}\right\rangle$. If there exists linear transformation $A$ s.t.
 \begin{align*}
 A\left|\phi_i\right\rangle = \sum_{i=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
 \end{align*}
@@ -528,22 +519,27 @@ then
 \begin{align*}
 A\sum_{i=1}^{n}\left|\phi_i\right\rangle = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
 \end{align*}
+
 Rearrange the terms. We have: 
 \begin{align*}
 LHS = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)\right\rangle = RHS
 \end{align*}
+
 Therefore，for all $\left(i, j\right) \in \left[1, n\right]\times\left[1, n\right]$, 
 \begin{align*}
 f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)
 \end{align*}
+
 1)While $i=j$, $f_{i}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1i}, x_{2i}, ..., x_{ni}\right)$, i.e., 
 \begin{align*}
 f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
 \end{align*}
+
 2)While $i\neq j$, $f_j\left(x_{ij}\right) = f_i\left(x_{ij}\right)$, i.e., 
 \begin{align*}
 f_i\left(u\right) = f\left(u\right)
 \end{align*}
+
 Above all, 
 \begin{align*}
 A\sum_{i=1}^{n}\left|u_i\right\rangle = \sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle
@@ -551,10 +547,10 @@ A\sum_{i=1}^{n}\left|u_i\right\rangle = \sum_{i=1}^{n}\left|u_i\right\rangle\lef
 
 2.Sufficiency: Obvious.
 
-\noindent Proposition II：Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
+\subparagraph{Theorem II} Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
 linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle$.
 
-\noindent Pf: 1.Necessity：Let $S_n$ be the set of all cycle notations of permutation $\left(1, 2, ..., n\right)$. If there exists linear transformation $A$ s.t. 
+\subparagraph{Pf:} 1.Necessity: Let $S_n$ be the set of all cycle notations of permutation $\left(1, 2, ..., n\right)$. If there exists linear transformation $A$ s.t. 
 \begin{align*}
 	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_1, u_2, ..., u_n\right)\right\rangle
 \end{align*}
@@ -562,11 +558,13 @@ then, for all $\left(j_1, j_2, ..., j_n\right)\in S_n$,
 \begin{align*}
 	A\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
 \end{align*}
+
 Therefore,  
 \begin{align*}
 	&A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle \\
 	&=\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
 \end{align*}
+
 And
 \begin{align*}
 	LHS &= A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|j_i\right\rangle\left|u_i\right\rangle\\
@@ -577,6 +575,7 @@ And
 	&= \sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)\right\rangle\\
 	&= RHS
 \end{align*}
+
 Corresponding items must be equal to each other, that is, for all $i \in \left[1, n\right]$ and $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
 \begin{align*}
 	f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right) = f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)
@@ -589,6 +588,7 @@ in other,
 \begin{align*}
 	f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
 \end{align*}
+
 Hence $A$ should meet the condition: 
 \begin{align*}
 	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle
