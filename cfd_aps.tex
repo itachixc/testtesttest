@@ -125,7 +125,7 @@ pra,
 %\maketitle
 
 \section{Introduction}
-Quantum computing is promising to have wide application on various computational tasks. It is believed that quantum computing has potentially exponential acceleration over the classical approach. There have already been many quantum algorithms to prove this idea: quantum factorization, quantum simulation, linear problem solver, etc. 
+Quantum computing is promising to have wide application on various computational tasks. It is believed that quantum computing has potentially exponential acceleration over the classical approach. There have already been many quantum algorithms to prove this idea: quantum factorization\cite{nielsen_quantum_2002}, quantum simulation\cite{Berry:2014:EIP:2591796.2591854}, linear problem solver\cite{doi:10.1137/16M1087072,PhysRevLett.103.150502}, etc. 
 
 Quantum computing has “quantum parallism”. An n-qubit quantum state is a vector in $C^{2^n}$ Hilbert space (a complex linear space). Every quantum operation is a transformation in the such linear space. If the quantum state vector encodes the description to a realistic problem, we can handle the whole vector with one operation in parallel without iterating over them. For example, if we want to multiply a matrix and vector, we no longer need for-loops, but with a few quantum gates directly applying on the input quantum states. This feature enables a group of algorithms called quantum linear algebra, which are exponentially faster than the classical algorithm.
 
@@ -168,21 +168,21 @@ The preprocessing in the CFluidIteration handles the result after the MultiGrid\
 \end{figure}
 
 As in Fig. 1, we marked the modules that we replace in our algorithm. With corresponding to the Fig. 2, the yellow part is replaced by the Quantum Preprocessing, the violet by the Quantum Linear Solver and the red by the Quantum PostProcessing. The quantum processes in each iteration step are doing a step of the time integration of $\Delta t$, with inputting $\vec{u}^i$ and outputting $\vec{u}^{i+1}$. We here have
-$$
+\begin{equation}
 u^0=u^0(initializer)
-$$
-$$
+\end{equation}
+\begin{equation}
 A=A(\vec{U}^{i-1},\hat{M})
-$$
-$$
+\end{equation}
+\begin{equation}
 x=\Delta \vec{U}^i
-$$
-$$
+\end{equation}
+\begin{equation}
 b=b(\vec{U}^{i-1},\hat{M})
-$$
-$$
+\end{equation}
+\begin{equation}
 \vec{U}^i=\vec{U}^{i-1}+\Delta \vec{U}^i
-$$
+\end{equation}
 where $M$ denotes the given information of the mesh grid. In each iteration step, the coefficient matrix and the constant vector of the linear equation are related to the solution of the previous step. 
 
 \subsection{Comparing quantum approach with classical approach}
@@ -200,22 +200,24 @@ It is unclear whether the time integration can be cancelled to avoid the iterati
 
 \subsubsection{Quantum Linear Solver}
 
-We here use the quantum linear solver as the accelerator of the calculation. The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The algorithm solves the linear equation $Ax = b$, which requires $O((d log⁡N)/\epsilon)$ oracle query and has the successful rate with $O(1/\kappa)$ where N represents the dimension of the equation, $d$ the sparsity of the matrix, $\epsilon$ the target precision, and $\kappa$ the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works. In these works, the complexity dependencies on the precision, conditional number are changed from linear to logarithm. The works introduces a method of linear combination of the operators, which are inspired by the previous works about the duality quantum computing framework established by Long.
+We here use the quantum linear solver as the accelerator of the calculation. The first quantum linear solver was developed by Harrow, Hassidim and Lloyd\cite{PhysRevLett.103.150502}. The algorithm solves the linear equation $Ax = b$, which requires $O((d log⁡N)/\epsilon)$ oracle query and has the successful rate with $O(1/\kappa)$ where N represents the dimension of the equation, $d$ the sparsity of the matrix, $\epsilon$ the target precision, and $\kappa$ the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works\cite{doi:10.1137/16M1087072}. In these works, the complexity dependencies on the precision, conditional number are changed from linear to logarithm. The works introduces a method of linear combination of the operators, which are inspired by the previous works about the duality quantum computing framework established by Long\cite{articleLongGuiandYangLiu}.
 
 The solver requires an efficient quantum representation of the matrix A and constant b. In this problem, the set of the partial derivative equations should be linearized to generate the expression of A and b.
 
 \subsubsection{Overall Complexity}
 
 QRAM is necessary in model to demonstrate quantum speed up. We use QRAM in three procedures. First is to store the information about the mesh grid. Second is to store the interval results of the solver. Third is to help recover from the probabilistic error of performing a non-unitary transformation. Here we list the qubit,query and gate complexity of the whole process of our algorithm: the required qubit number is
-$$
+\begin{equation}
 O(qnum)=O(2log(4N)+log(d\kappa log(d\kappa/\epsilon)))
-$$
+\end{equation}
 The QRAM and oracle query complexity is 
-$$O(query)=O(d\kappa^2log^2(d\kappa/\epsilon))$$
+\begin{equation}
+O(query)=O(d\kappa^2log^2(d\kappa/\epsilon))
+\end{equation}
 The gate complexity is 
-$$
+\begin{equation}
 O(d\kappa^2log^2(d\kappa/\epsilon)\times poly(log(4N)/\epsilon))
-$$
+\end{equation}
 In Sec.~\ref{detail}, we will analyze in detail the complexity of each module of our algorithm.
 
 \begin{table*}
@@ -246,15 +248,21 @@ In the above algorithm, we considered the mesh information as the oracle. A dire
 To realize our quantum approach and the effect of the acceleration, we claim that several assumptions must be made on the future quantum computer.
 
 \subparagraph{Fault-Tolerance}
+$\qquad\qquad\qquad\qquad\qquad$
+ 
 Our algorithm accelerates the calculation in each iteration step, however, the number of iteration, as we investigated, would be much bigger when the number of the mesh grows. We do not perform quantum measurements to extract the result in each step. Instead, the quantum feature (entanglement, superposition) should be preserved during the whole calculation process. 
 
 This feature of the algorithm implies the storage of the quantum state is not affected by the decoherence and noise. Only a fault-tolerant quantum computer can meet this demand.
 
 \subparagraph{Quantum Random Access Memory}
+$\quad\qquad\qquad$
+
 The quantum-classical hybrid algorithms are always facing the problem of the data conversion between the classical and the quantum.
 
 The problem is what the time complexity is to perform such conversions:
-$$ \sum|addr\rangle|data\rangle\ (Quantum\ Memory) $$
+\begin{equation}
+\sum|addr\rangle|data\rangle\ (Quantum\ Memory) 
+\end{equation}
 and (classical memory written in C++ form)
 $$ \text{vector<complex<double> > data}\ (Classical\ Memory) $$
 
@@ -391,9 +399,9 @@ We got an iterative problem with solving linear systems ($\mathcal{A} \Delta U =
 The Initialization process contains 2 steps: state initialization and meshing scheme oracle initialization.
 \subsubsection{State initialization}
 The initial value of  each $\vec{u}_i$ is the same, we assume the initial value of $\vec{u}_i$ in each grid can be written as $\vec{u}_i=(x_0,x_1,x_2,x_3)$, so the initial state  $|\vec{U}^0\rangle$ can be written as:
-$$
+\begin{equation}
 |\vec{U}^0\rangle=C_0\sum_{i=0}^{4N-1}{x_{i\%4}|i\rangle}
-$$
+\end{equation}
 where $C_0=\frac{1}{\sqrt{N\sum_{i=0}^{3}{x_i^2}}}$, $|\vec{U}^0\rangle$ can be prepared with a $O(1)$ length quantum circuit, the quantum circuit is shown in fig.~\ref{state_initialization}.
 
 \begin{figure}[htbp]
@@ -402,9 +410,9 @@ where $C_0=\frac{1}{\sqrt{N\sum_{i=0}^{3}{x_i^2}}}$, $|\vec{U}^0\rangle$ can be 
     \label{state_initialization}
 \end{figure}
 Similarly, we can also construct the digital version of $\vec{U}^0$, which is written as:
-$$
+\begin{equation}
 |\vec{d}_U^0\rangle=\sum_i{|i\rangle|U_i\rangle}
-$$
+\end{equation}
 the corresponding quantum circuit of $|\vec{d}_U^0\rangle$ is shown in fig.~\ref{digit_state_initialization}.In this process, we need $2m$ qubits and gete complexity is $O(1)$.
 
 \begin{figure}[htbp]
@@ -414,24 +422,24 @@ the corresponding quantum circuit of $|\vec{d}_U^0\rangle$ is shown in fig.~\ref
 \end{figure}
 
 In the following process, we need a QRAM to store $|\vec{d}_U^0\rangle$, which is defined as:
-$$
+\begin{equation}
 M_U|i\rangle|0\rangle=|i\rangle|U_i\rangle
-$$
+\end{equation}
 And $M_U$ can operate on a superposition state:
-$$
+\begin{equation}
 M_U\frac{1}{\sqrt{4N}}\sum_i{|i\rangle|0\rangle}=\frac{1}{\sqrt{4N}}\sum_i{|i\rangle|U_i\rangle}
-$$
+\end{equation}
 
 \subsubsection{Meshing scheme oracle}
 
 Meshing scheme oracle is used to encode meshing scheme into quantum circuit. We define two meshing scheme oracles: $O_{adjacent}$ and $O_{coor}$. $O_{adjacent}$ is used to extract the adjacent grid number of a specific grid, it can be writen as:
-$$
+\begin{equation}
 O_{adjacent}|i\rangle|j\rangle=|i\rangle|g(i,j)\rangle
-$$
+\end{equation}
 it means $j-th$ adjacent grid number of grid $i$ is $g(i,j)$. $O_{coor}$ is used to extract coordinates of a grid:
-$$
+\begin{equation}
 O_{coor}|i\rangle|0\rangle=|i\rangle|\vec{x}_i\rangle
-$$
+\end{equation}
 Here $\vec{x}_i$ means the coordinates of each corner of the grid $i$. We can get other position information with $O_{coor}$, such as grid center of gravity coordinates, the normal to each side of the grid $i$ and so on.
 
 The number of qubits required to construct $O_{adjacent}$ and $O_{coor}$ is $2(m-2)$, $m-2+C_0q_f$ respectively, here $C_0q_f$ is a qubit sequence represents coordinate information and other position information obtained from grid coordinates, and $C_0$ is a constant number.
@@ -446,13 +454,13 @@ In preprocessing step, we construct the oracles which represent matrix $A$ and v
 
 \subsubsection{Oracle $O_l$}
 $O_l$ can be written as:
-$$
+\begin{equation}
 O_l|i\rangle|j\rangle=|i\rangle|f(i,j)\rangle
-$$
+\end{equation}
 $f(i,j)$ represents column number of the $j-th$ nonzero element of $A$'s $i-th$ row. We use $O_{adjacent}$ to construct. $f(i,j)$ can be written as:
-$$
+\begin{equation}
 f(i,j)=4g(i/4,j/4)+j\%4
-$$
+\end{equation}
 There is a trick to construct the quantum circuit of this process, as shown in fig.\ref{OL} we just operate $O_{adjacent}$ on the highest $log(N)$ qubits of $i$ and $j$, then in the whole space of $|i\rangle$ and $|j\rangle$, we have constructed the $O_l$. The required qubit number is $2m$ in this process. 
 
 \begin{figure}[htbp]
@@ -464,30 +472,29 @@ There is a trick to construct the quantum circuit of this process, as shown in f
 
 \subsubsection{Oracle $O_b$}
 $O_b$ can be written as:
-$$
+\begin{equation}
 O_b|0\rangle=\sum_i{b_i|i\rangle}
-$$
+\end{equation}
 As shown in Sec.~\ref{classicalFVM}, the $\vec{b}$ represents the residual $\vec{R}$, and we find $R_i$ is a function of variables and coordinates of $(i/4)-th$ and its adjacent grids. In special, the expression of these functions is regular. In specific, $R_i$'s expression format is only related to $i\%4$, so we can efficiently construct $R_i$. To construct $O_b$, we need a QRAM which restores $\vec{U}$, we define:
-$$
+\begin{equation}
 M_U|i\rangle|0\rangle=|i\rangle|U_i\rangle
-$$
-
+\end{equation}
 We can use $M_U$, $O_l$, $O_{coor}$ to construct $O_b$, as shown in fig.\ref{OB}, we first get the related variables and coordinates:
-$$
+\begin{equation}
 |i\rangle|U_{related}\rangle|x_{related}\rangle
-$$
+\end{equation}
 Then, we compute $R_i$ and get
-$$
+\begin{equation}
 |i\rangle|U_{related}\rangle|x_{related}\rangle|R_i\rangle
-$$
+\end{equation}
 Next, release $|U_{related}\rangle$ and $|x_{related}\rangle$,
-$$
+\begin{equation}
 |i\rangle|R_i\rangle
-$$
+\end{equation}
 Finally, operate QDAC and we finish this process:
-$$
+\begin{equation}
 \sum_i{b_i|i\rangle}
-$$
+\end{equation}
 
 \begin{figure}[htbp]
     \subfigure{\includegraphics[width=0.30\textwidth]{Fig/Ob.png}}
@@ -500,28 +507,27 @@ In this process, the required qubit number is $m+C_bq_f$, $C_bq_f$ is an ancilla
 
 \subsubsection{Oracle $O_A$}
 $O_A$ can be written as:
-$$
+\begin{equation}
 O_A|i\rangle|j\rangle|z\rangle=|i\rangle|j\rangle|z\oplus A_{ij}\rangle
-$$
-
+\end{equation}
 To construct $O_A$, we also need $M_U$, $O_l$ and $O_{coor}$. As shown in Sec.\ref{classicalFVM}, matrix $A$ is a sparse matrix and the element $A_{4i_0+i_1,4j_0+j_1}\neq0$ only if grid $i_0$ and $j_0$ are adjacent, here $i_0,j_0\in[0,N-1]$ and $i_1,j_1\in[0,3]$, we have $i=4i_0+i_1$ and $j=4j_0+j_1$. $A_{4i_0+i_1,4j_0+j_1}$ is a function of variables and coordinates of grid $i_0$ and $j_0$, it can be written as
-$$
+\begin{equation}
 A_{4i_0+i_1,4j_0+j_1}=f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})
-$$
+\end{equation}
 Here the format of funcitons $f_{i_0,i_1,j_0,j_1}$ for different $i_0,i_1,j_0,j_1$ are also regular, it can be divided into two types:$i_0=j_0$ and $i_0\neq j_0$, and each type contains 16 conditions, corresponding to different $i_1$ and $j_1$. So we can efficiently construct $O_A$.
 
 To compute $A_{4i_0+i_1,4j_0+j_1}$, we first construct
-$$
+\begin{equation}
 |4i_0+i_1,4j_0+j_1\rangle|\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}\rangle
-$$
+\end{equation}
 Then $f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})$  is an arithmetic expression of $\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}$, we get
-$$
+\begin{equation}
 |4i_0+i_1,4j_0+j_1\rangle|\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}\rangle|f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})\rangle
-$$
+\end{equation}
 Finally, uncompute $\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}$,
-$$
+\begin{equation}
 |4i_0+i_1,4j_0+j_1\rangle|0,0,0,0\rangle|f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})\rangle
-$$
+\end{equation}
 And we realize $O_A$, the corresponding quantum circuit is shown in fig.~\ref{OA} 
 \begin{figure}[htbp]
     \subfigure{\includegraphics[width=0.30\textwidth]{Fig/OA.png}}
@@ -535,33 +541,33 @@ In this process,the number of times $M_U$, $O_{adjacent}$ and $O_{coor}$ are use
 linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle$.
 
 \noindent Pf: 1.Necessity：Let $\left|\phi_i\right\rangle = \sum_{j=1}^n \left|x_{ij}\right\rangle$. If there exists linear transformation $A$ s.t.
-\begin{align*}
+\begin{align}
 A\left|\phi_i\right\rangle = \sum_{i=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
-\end{align*}
+\end{align}
 then
-\begin{align*}
+\begin{align}
 A\sum_{i=1}^{n}\left|\phi_i\right\rangle = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
-\end{align*}
+\end{align}
 Rearrange the terms. We have: 
-\begin{align*}
+\begin{align}
 LHS = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)\right\rangle = RHS
-\end{align*}
+\end{align}
 Therefore，for all $\left(i, j\right) \in \left[1, n\right]\times\left[1, n\right]$, 
-\begin{align*}
+\begin{align}
 f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)
-\end{align*}
+\end{align}
 1)While $i=j$, $f_{i}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1i}, x_{2i}, ..., x_{ni}\right)$, i.e., 
-\begin{align*}
+\begin{align}
 f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
-\end{align*}
+\end{align}
 2)While $i\neq j$, $f_j\left(x_{ij}\right) = f_i\left(x_{ij}\right)$, i.e., 
-\begin{align*}
+\begin{align}
 f_i\left(u\right) = f\left(u\right)
-\end{align*}
+\end{align}
 Above all, 
-\begin{align*}
+\begin{align}
 A\sum_{i=1}^{n}\left|u_i\right\rangle = \sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle
-\end{align*}
+\end{align}
 
 2.Sufficiency: Obvious.
 
@@ -569,44 +575,44 @@ A\sum_{i=1}^{n}\left|u_i\right\rangle = \sum_{i=1}^{n}\left|u_i\right\rangle\lef
 linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle$.
 
 \noindent Pf: 1.Necessity：Let $S_n$ be the set of all cycle notations of permutation $\left(1, 2, ..., n\right)$. If there exists linear transformation $A$ s.t. 
-\begin{align*}
+\begin{align}
 	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_1, u_2, ..., u_n\right)\right\rangle
-\end{align*}
+\end{align}
 then, for all $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
-\begin{align*}
+\begin{align}
 	A\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
-\end{align*}
+\end{align}
 Therefore,  
-\begin{align*}
-	&A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle \\
+\begin{align}
+	&A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle \notag\\
 	&=\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
-\end{align*}
+\end{align}
 And
-\begin{align*}
-	LHS &= A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|j_i\right\rangle\left|u_i\right\rangle\\
-	&= A\sum_{i=1}^n\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\left|j_i\right\rangle\left|u_i\right\rangle\\
-	&= A\sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle \\
-	&= \sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle\left|f_{k}\left(u_i, u_i, ..., u_i\right)\right\rangle\\
-	&= \sum_{k=1}^n\sum_{i=1}^n\left|i\right\rangle\left|u_k\right\rangle\left|f_{i}\left(u_k, u_k, ..., u_k\right)\right\rangle \\
-	&= \sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)\right\rangle\\
+\begin{align}
+	LHS &= A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|j_i\right\rangle\left|u_i\right\rangle\notag\\
+	&= A\sum_{i=1}^n\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\left|j_i\right\rangle\left|u_i\right\rangle\notag\\
+	&= A\sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle \notag\\
+	&= \sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle\left|f_{k}\left(u_i, u_i, ..., u_i\right)\right\rangle\notag\\
+	&= \sum_{k=1}^n\sum_{i=1}^n\left|i\right\rangle\left|u_k\right\rangle\left|f_{i}\left(u_k, u_k, ..., u_k\right)\right\rangle\notag \\
+	&= \sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)\right\rangle\notag\\
 	&= RHS
-\end{align*}
+\end{align}
 Corresponding items must be equal to each other, that is, for all $i \in \left[1, n\right]$ and $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
-\begin{align*}
+\begin{align}
 	f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right) = f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)
-\end{align*}
+\end{align}
 i.e.，for any $i\neq j$
-\begin{align*}
+\begin{align}
 	\frac{\partial f_i\left(u_1, u_2, ..., u_n\right)}{\partial u_j} = 0
-\end{align*}
+\end{align}
 in other, 
-\begin{align*}
+\begin{align}
 	f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
-\end{align*}
+\end{align}
 Hence $A$ should meet the condition: 
-\begin{align*}
+\begin{align}
 	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle
-\end{align*}
+\end{align}
 
 2.Sufficiency: Obvious.
 
@@ -616,7 +622,7 @@ After the Linearization, we know change the problem into solving the linear
 equation. Our goal is to output a state 
 \begin{equation}
 |\tilde{x}\rangle:=\frac{\Sigma_i \tilde{x}_i|i\rangle}
-{\lVert \Sigma_i \tilde{x}_i |i\rangle\rVert}\notag
+{\lVert \Sigma_i \tilde{x}_i |i\rangle\rVert}
 \end{equation}
 such that, $\lVert |\tilde{x}\rangle-|x\rangle\rVert\leqslant\epsilon$. 
 The amplitude of $|x\rangle$ satisfy $\vec{x}=A^{-1}\vec{b}$
@@ -632,13 +638,17 @@ following
 \end{figure}
 
 In fig.~\ref{o}, $t=O(log(j_0))$ is the qubits for control bits  $\frac{1}
-{\sqrt{\alpha}}\sum_i\sqrt{\alpha_i}|i\rangle$. The total qubits number is $2(m+1)+t+C_Aq_f$
+{\sqrt{\alpha}}\sum_i\sqrt{\alpha_i}|i\rangle$. The total qubits number is 
+\begin{equation}
+2(m+1)+t+C_Aq_f
+\end{equation}
+
 
 \subsubsection{Complexity and Successful probability}
 In \cite{doi:10.1137/16M1087072}, function $1/x$ can be $\epsilon$ approximated by
 linear combination of Chebyshev polynomials with highest order 
 $O(j_0)=O(d\kappa log(d\kappa/\epsilon))$, the total
-query complexity is $O(\alpha j_0)$. Because $\alpha\leqslant 4j_0/d$.
+query complexity is $O(\alpha j_0)$. Because $\alpha\leqslant 4j_0/d$,
 $O(\alpha j_0)=O(d\kappa^2log^2(d\kappa/\epsilon))$. The total number of 
 $\mathcal{P}_B$ is $O(\alpha)$.
 
@@ -648,31 +658,31 @@ and the success probability is
 $(\lVert F|b\rangle\rVert/\alpha)^2$. 
 
 Now the matrix F is the inverse of $A$ 
-which has condition number $\kappa$ and $\lVert A\rVert=1$. 
-
-So $\lVert F|b\rangle\rVert\in (1, \kappa)$. For $\alpha\leqslant4j_0/d$ so
-$P_{succ}\geqslant 1/(16\kappa^2 log(d\kappa/\epsilon) log(4(\kappa d)^2log(d
-\kappa/\epsilon)/\epsilon)$. 
-
+which has condition number $\kappa$ and $\lVert A\rVert=1$,
+so $\lVert F|b\rangle\rVert\in (1, \kappa)$.
+\begin{equation}
+P_{succ}\geqslant 1/(16\kappa^2 log(d\kappa/\epsilon) log(4(\kappa d)^2log(d
+\kappa/\epsilon)/\epsilon) 
+\end{equation}
 
 \subsection{Postprocessing}
 
 We got $\Delta \vec{U}^n$ through quantum linear solver. In postprocessing process, we update $M_U$. First, we operate QADC on $\Delta \vec{U}^n$ and get digital version of $\Delta \vec{U}^n$:
-$$
+\begin{equation}
 d_{\Delta U}^n=\sum_i{|i\rangle|\Delta U_i^n\rangle}
-$$
+\end{equation}
 Then we construct the following state with $M_U$:
-$$
+\begin{equation}
 \sum_i{|i\rangle|\Delta U_i^n\rangle|U_i^n\rangle}
-$$
+\end{equation}
 Next, execute adder on $|\Delta U_i^n\rangle$ and $|U_i^n\rangle$
-$$
+\begin{equation}
 \sum_i{|i\rangle|\Delta U_i^{n+1}\rangle|U_i^n\rangle}
-$$
+\end{equation}
 Finally, release $|U_i^n\rangle$ with $M_U^{\dagger}$
-$$
+\begin{equation}
 \sum_i{|i\rangle|\Delta U_i^{n+1}\rangle|0\rangle}
-$$
+\end{equation}
 The quantum circuit is shown as follows: FIG. \ref{postprocessing_qcir}
 \begin{figure}[htbp]
 	\subfigure{\includegraphics[width=0.48\textwidth]{Fig/postprocessing.png}}
@@ -716,18 +726,17 @@ thus we need $M/p$ times to extract information from QRAM and $M/p$ times QDAC.
 \subsection{Overall Complexity Analysis}
 
 In this section, we analyze the complexity of the entire algorithm flow. The required qubit number of the whole process is 
-$$
+\begin{equation}
 qnum=2(m+1)+log(j_0)+C_Aq_f
-$$
+\end{equation}
 As shown before, $O(j_0)=O(d\kappa log(d\kappa/\epsilon))$.
 In each iteration, two subprocesses might fail: QDAC operation in construction process of $O_b$ and linear combination of Chebyshev polynomials in construction process of $A^{-1}$. The success rates corresponding to these two subprocesses are written as:
-$$
+\begin{equation}
 p_{QDAC}=\frac{1}{4N}\sum_i{(\Delta U_i/C_{max})^2}
-$$
-
-$$
+\end{equation}
+\begin{equation}
 p_{A^{-1}}=\frac{1}{\alpha}
-$$
+\end{equation}
 Here $C_{max}>=max\{\Delta U_i\}$ and $O(\alpha)=O(\kappa log(\kappa d/\epsilon))$. $p_{QDAC}$ is a constant number, we can ignore it.
 Oracle $O_{adjacent}$ and $O_{coor}$ appear $O(1)$ times in quantum circuit of $O_l,O_b,O_A$, $O_l$,$O_A$ appear $O(j_0)$ times in each iteration. So the query complexity of $O_{adjacent}$ and $O_{coor}$ is $O(\alpha IterTimes\times j_0)$.
 
@@ -812,9 +821,9 @@ Then we could eliminate at least $N/d$ entries of the last row of $\mathcal{A^{\
 \subsection{Relation to QRAM: The Main Difficulties of the Problem}
 
 QRAM is a quantum analogue to the classical Random Access Memory (RAM). QRAM enables the user obtaining the data in the QRAM efficiently while the address is given in the superposition state. 
-$$
+\begin{equation}
 QRAM: \sum_i{|i\rangle|0\rangle}=\sum_i{|i\rangle|U_i\rangle}
-$$
+\end{equation}
 The $U_i$ denotes the classical data encoded in the quantum states.
 
 There were several QRAM models proposed in the previous works. A typical one is to implement the QRAM by a set of optical devices, requiring O(log N) operations (N denotes the memory length). Another more straightforward approach is to realize it with the decomposition of the quantum circuits. However, although the addressing part is realized in O(log N), the state generation part involves O(N) multi-controlled NOT gates, which should not be considered as an efficient plan.
