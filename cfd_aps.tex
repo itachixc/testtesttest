@@ -291,7 +291,7 @@ $\vec{u}_i$: variables of grid $i$
 
 An important applicaiton of modern Computational Fluid Dynamics (CFD) is to simulate systems in aircraft aerodynamic design. The usual classical algorithm often means high complexity, which forces us in seeking for more effective computations, e.g., a quantum-hybrid solution.
 
-For briefness, we assumed the flow to be 2D, inviscid and steady, then gained Euler equations, a special form of the Navier-Stokes equation:
+For briefness, we assumed the flow to be 2D, inviscid and steady, then gained the Euler equation \cite{euler1757principes}, a special form of the Navier-Stokes equations:
 \begin{align}\label{eq:differential_equation}
 \frac{\partial U}{\partial t} + \nabla \cdot \bm{F} = 0
 \end{align}
@@ -345,7 +345,7 @@ For any volume $\Omega$ and its boundary $\partial\Omega$, Formula.\ref{eq:diffe
 	\frac{\partial}{\partial t}\int_\Omega U d V + \oint_{\partial \Omega} \bm{F} \cdot d \bm{S} = 0
 \end{align}
 
-One effective approach to solve the equation shown above is the Finite Volume Method (FVM). To solve the partial differential equations (PDE), discretization with numerical grid is necessary. Each spatial point is a node, identified by a set of indices, e.g. $\left(i, j\right)$ in the 2-D case, and several nodes combine a lattice. Midpoints of edges and centerpoints of adjacent lattices define a cell \cite{economon2015su2}. The equation of conservation was applied to each cell of the grid. With discretization of space, the calculus operations in PDE could also be changed to their numerical approximations. We chose implicit Euler scheme to deal with the time differential.
+One effective approach to solve the equation shown above is the Finite Volume Method (FVM) \cite{eymard2000finite}. To solve the partial differential equations (PDE), discretization with numerical grid is necessary. Each spatial point is a node, identified by a set of indices, e.g. $\left(i, j\right)$ in the 2-D case, and several nodes combine a lattice. Midpoints of edges and centerpoints of adjacent lattices define a cell \cite{economon2015su2}. The equation of conservation was applied to each cell of the grid. With discretization of space, the calculus operations in PDE could also be changed to their numerical approximations. We chose implicit Euler scheme to deal with the time differential.
 \begin{figure}[h]
 	\centering  
 	\includegraphics[width=0.7\linewidth]{Fig/grid}
