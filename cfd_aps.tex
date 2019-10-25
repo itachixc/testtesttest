@@ -185,15 +185,15 @@ We here use the quantum linear solver as the accelerator of the calculation. The
 \subsubsection{Overall Complexity}
 QRAM is necessary in model to demonstrate quantum speed up. We use QRAM in three procedures. First is to store the information about the mesh grid. Second is to store the interval results of the solver. Third is to help recover from the probabilistic error of performing a non-unitary transformation. Here we list the qubit,query and gate complexity of the whole process of our algorithm: the required qubit number is
 \begin{equation}
-O(qnum)=O(2log(4N)+log(d\kappa log(d\kappa/\epsilon)))
+O(\text{qnum})=O(2\log(4N)+\log(d\kappa \log(d\kappa/\epsilon)))
 \end{equation}
 The QRAM and oracle query complexity is 
 \begin{equation}
-O(query)=O(d\kappa^2log^2(d\kappa/\epsilon))
+O(\text{query})=O(d\kappa^2\log^2(d\kappa/\epsilon))
 \end{equation}
 The gate complexity is 
 \begin{equation}
-O(d\kappa^2log^2(d\kappa/\epsilon)\times poly(log(4N)/\epsilon))
+O(d\kappa^2\log^2(d\kappa/\epsilon)\times poly(\log(4N)/\epsilon))
 \end{equation}
 In Sec.~\ref{detail}, we will analyze in detail the complexity of each module of our algorithm.
 
@@ -215,7 +215,7 @@ In Sec.~\ref{detail}, we will analyze in detail the complexity of each module of
 	\end{tabular} }
 \end{table*}
 
-\subsubsection{Simulation time of Classical Solution}
+\subsection{Simulation time of Classical Solution}
 
 The implicit Euler solver has the linear complexity. We declare this result with two proofs: in both theory and experiment. The theory shows that the classical solver uses multigrid method, which are expected to have the complexity $O(n)$ where $n$ denotes the number of mesh grids. We also did experiment on various grid size and calculates the running time (except the preparation). As the figure shows, that running time has a very good linearity to the mesh number.
 \begin{figure} 
@@ -226,9 +226,10 @@ The implicit Euler solver has the linear complexity. We declare this result with
 
 It is unclear whether the time integration can be cancelled to avoid the iteration process. We here do not change the iteration process, that is, we have to seek a quantum approach with sublinear runtime between each iteration step.
 
-\subsubsection{Simulation time of Quantum Approach}
+\subsection{Classical Simulation for Our Quantum Approach}
 
-\subsubsection{Improvement for mesh generation}
+
+\subsection{Possible Improvement on the Mesh Generation}
 Besides the acceleration in the time integration process, the mesh generation module can also be integrated in the quantum computer.
 
 In the above algorithm, we considered the mesh information as the oracle. A direct way is to generate the mesh file beforehand, and encode the classical data into the quantum computer. This way may cause a time complexity of $O(N)$. Instead of reading a pre-generated mesh file, we could replace the mesh generation program by a quantum algorithm. This method will be discussed in the detailed explanation.
