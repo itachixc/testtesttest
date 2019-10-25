@@ -125,37 +125,40 @@ pra,
 %\maketitle
 
 \section{Introduction}
-Quantum computing is promising to have wide application on various computational tasks. It is believed that quantum computing has potentially exponential acceleration over the classical approach. There have already been many quantum algorithms to prove this idea: quantum factorization\cite{nielsen_quantum_2002}, quantum simulation\cite{Berry:2014:EIP:2591796.2591854}, linear problem solver\cite{doi:10.1137/16M1087072,PhysRevLett.103.150502}, etc. 
+Quantum computing is a promising area in computation with wide application to all computational tasks. The common-held belief is that quantum computing potentially offers an exponential acceleration over classical approaches to computing. Many quantum algorithms including quantum factorization, quantum simulation, and the linear problem solver have already appeared that prove this idea. 
 
-Quantum computing has “quantum parallism”. An n-qubit quantum state is a vector in $C^{2^n}$ Hilbert space (a complex linear space). Every quantum operation is a transformation in the such linear space. If the quantum state vector encodes the description to a realistic problem, we can handle the whole vector with one operation in parallel without iterating over them. For example, if we want to multiply a matrix and vector, we no longer need for-loops, but with a few quantum gates directly applying on the input quantum states. This feature enables a group of algorithms called quantum linear algebra, which are exponentially faster than the classical algorithm.
+An inherent feature of quantum computing is its “quantum parallelism”. An n-qubit quantum state is a vector in the Hilbert space $C^{2^n}$ (a complex linear space). Every quantum operation is a transformation in this linear space. If the quantum state vector encodes the description to a realistic problem, then a change in the vector can be handled with one operation in parallel without iterating over the state of each qubit. For example, for-loops are no longer needed if we want to multiply a matrix and vector. Indeed, only a few quantum gates applied directly to the input quantum states is all that is required. This feature enables a group of algorithms, called the quantum linear algebra, that are exponentially faster than their classical counterparts.
 
-Computational Fluid Dynamics (CFD) problems are often related to solving a series of equations in numerical methods. Here we do not introduce the classical CFD method. But we need to mention that a CFD solver needs to do time integration on the partial derivative equations, so that it needs to iterate with a $\Delta t$ to calculate a small evolution of the system, and finally stops when the system goes stable. In this problem set, we should understand the SU2 solver and try to replace some modules with quantum subroutines, (a.k.a. quantum-classical hybrid approach,) to seek quantum speed-up in this problem.
+Computational fluid dynamics (CFD) problems are often related to solving a series of equations in numerical methods. Here, we do not introduce the classical CFD method. Nevertheless, we need to mention that a CFD solver needs to perform time integrations on partial derivative equations and hence needs to iterate using time increments $\Delta t$ to calculate small evolutions of the system, stopping when the system becomes stable. In this problem set, we need to understand the SU2 solver and try to replace some modules with quantum subroutines, (a.k.a., the quantum--classical hybrid approach) to seek quantum speedups in their execution.
 
-Here we introduce our algorithm. The modules that we replace are data structures used and methods called in the class CFluidIteration. In the data structure, these are replaced by quantum memory or quantum states: including the information about the mesh grid and all vectors that are involved in the linear equations. In the process of the time integration, the linear solver is replaced by a quantum version. And in other pro- and post-processing parts, they are completely replaced by quantum arithmetic modules to form the oracle necessary in the quantum linear solver. Besides, we do not change the problem model, the mesh setting and the FVM method, including the iteration process of the time integration. 
+Here we introduce our algorithm. The modules that we replace are data structures used and methods in the class called CFluidIteration. In the data structure, they are replaced by quantum memory or the collection of quantum states that include information about the mesh setting and all vectors that are involved in the linear equations. For the time integrations, the linear solver is replaced by a quantum version. In pre- and post-processing stages, they are completely replaced by quantum arithmetic modules to form the oracle necessary in the quantum linear solver.
 
-As the result, the time complexity of our algorithm is proportional to $\log N$, where N denotes the mesh number. The qubit number is also proportional to $\log N$. Besides the effect of the mesh number, both the complexity and the qubit number are affected by the precision $\epsilon$. We also dicussed the conditional number and the sparsity. They affect the time complexity, however, they are considered as a constant in the problem because they will not change greatly.
+Moreover, we do not change the problem model, the mesh setting, and the FVM method, including the iteration process of the time integration.
 
-Along with the algorithm detail, we also discuss the difficulties of the problem. One is that we prove that it is necessary to include the quantum random access memory (QRAM), without which quantum speed up will not be achieved. Another is that the qubit should be fault-tolerant logical qubit, because the requirements of the gate number and the state storage time greatly exceed any limit of the near-future NISQ device.
+As a result, the time complexity of our algorithm is proportional to $\log N$, where $N$ denotes the number of cells in the mesh or simply mesh number. The number of qubits is also proportional to $\log N$. Furthermore, the effect of mesh number, both the complexity and the number of qubits are affected by the precision $\epsilon$. We also discussed the conditional number and the sparsity. They affect the time complexity; however, they are considered as constant in the problem because they do not vary much.
+
+Along with the details of the algorithm, we also discuss the difficulties of the problem. One is that we prove that it is necessary to include quantum random access memory (QRAM), without which quantum speedup cannot be achieved. Another is that the qubit should be a fault-tolerant logical qubit, because the requirements of gate number and the state storage time greatly exceed any limit of noisy intermediate-scale quantum devices in the near-future.
+
 
 \section{Submission Summary}
 
-\subsection{Explanation of the proposed method}
+\subsection{Explanation of the Proposed Method}
 
 \subsubsection{Replacement of the SU2 submodule}
 
-SU2 is an open-source fluid dynamics solver. The task is to study its SU2\_CFD program for solving the computational fluid dynamic problem and to replace some modules in the classical solver by quantum subprocess to become a quantum-classical hybrid approach. This approach should demonstrate the quantum speed-up. As in Fig. \ref{SU2modules}, we mark the modules we replace by the quantum subroutines in the SU2 solver.
+SU2 is an open-source fluid dynamics solver. We study its SU2\_CFD module to solve the CFD problem, the objective being to replace some modules in the classical solver by quantum subprocesses to form a quantum--classical hybrid software, and finally to demonstrate quantum speedup. As in Fig. \ref{SU2modules}, we mark the modules we replace by the quantum subroutines in the SU2 solver.
 
 \begin{figure*}[htbp]
     \subfigure{\includegraphics[width=0.95\textwidth]{Fig/SU2_process.png}}
-     \caption{An overview of SU2\_CFD modules. The program starts from the main function, where the configuration file is read. Then an instance of CFluidDriver is created to control the whole calculation process. The time integration is performed in a for-loop controlled by CFluidIteration. In each iteration step, a MultiGrid\_Cycle method and a PreProcessing method are called. The MultiGrid\_Cycle contains the Multigrid algorithm to calculate the FVM problem. The Preprocessing bridges the gap between the result in the last iteration and the input of the next. In the MultiGrid\_Cycle, the preprocessing subprocess reads the data of the mesh grids and generates the Jacobi matrix, which is then sent to the CEulerSolver and the linear equation is solved there.}
+     \caption{An overview of SU2\_CFD modules. The program starts from the main function, where the configuration file is read. Then an instance of CFluidDriver is created to control the whole calculation process. The time integration is performed in a for-loop controlled by CFluidIteration. In each iteration step, a MultiGrid\_Cycle method and a PreProcessing method are called. The MultiGrid\_Cycle contains the Multigrid algorithm to calculate the FVM problem. The Preprocessing bridges the gap between the result in the last iteration and the input of the next. In the MultiGrid\_Cycle, the preprocessing subprocess reads the data of the mesh and generates the Jacobi matrix, which is then sent to the CEulerSolver and the linear equation is solved there.}
     \label{SU2modules}
 \end{figure*}
 
-The preprocessing in the CMultiGridIntegration includes the preprocess about the generation of the linear problem. This part is replaced by quantum arithmetic and calling to the oracle holding the data of the mesh information. The final target, similar to the classical process, is to generate the quantum data needed in the next step: Quantum linear solver.
+The preprocessing in the CMultiGridIntegration module includes the preprocess that generates the linear problem. This part is replaced by a quantum arithmetic counterpart and calls to the oracle holding the data concerning mesh information. Similar to the classical process, the final objective is to generate the quantum data needed in the next step: the quantum linear solver.
 
-MultiGrid\_Cycle calls the TimeIntegration method in the CMultiGridIntegration, which is replaced by quantum linear solver. The quantum linear solver is exponentially faster than the classical counterpart. The SpaceIntegration is no longer needed because it is automatically handled by the quantum parallism.
+The module MultiGrid\_Cycle calls the TimeIntegration module in CMultiGridIntegration; this is replaced by the quantum linear solver, which executes the tasks exponentially faster than its classical counterpart.
 
-The preprocessing in the CFluidIteration handles the result after the MultiGrid\_Cycle, generates the data for the next iteration, and displays the result. This module is replaced by a quantum postprocess, which aims to add the variation to the vector and to prepare the next iteration. 
+The preprocessing in CFluidIteration handles the result after MultiGrid\_Cycle, then generates the data for the next iteration, and displays the result. This module is replaced by a quantum postprocess, the objective of which is to add the variation to the vector and to prepare the next iteration.
 
 \subsubsection{Overview of the algorithm}
 
@@ -166,34 +169,33 @@ The preprocessing in the CFluidIteration handles the result after the MultiGrid\
 \end{figure}
 
 As in Fig. 1, we marked the modules that we replace in our algorithm. Corresponding to the Fig. 2, the yellow part is replaced by the Quantum Preprocessing, the violet by the Quantum Linear Solver and the red by the Quantum PostProcessing. The quantum processes in each iteration step are doing a step of the time integration of $\Delta t$, with inputting $\vec{U}^i$ and outputting $\vec{U}^{i+1}$. We here have the relations
-$$
-\bm{A}^i=A(\vec{U}^{i-1},\hat{M})
-$$
-$$
-\vec{b}^i=b(\vec{U}^{i-1},\hat{M}),
-$$ from which we could generate quantum oracles necessary for the quantum linear solver. Here, $\bm{A}^i$ denotes the coefficient matrix, and $\vec{b}^i$ denotes the constant term, both in the $i^{th}$ iteration. $\hat{M}$ represents the quantum oracle for the mesh information. Then we will solve the following equation with quantum computer:
-$$
-\bm{A}^i\Delta \vec{U}^i=\vec{b}^i.
-$$
-Finally, by adding the variation to the vector in the last step $\vec{U}^{i-1}$, this iteration step is over, that is
-$$
-\vec{U}^i=\vec{U}^{i-1}+\Delta \vec{U}^i.
-$$
-
-We here use the quantum linear solver as the accelerator of the calculation. The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The algorithm solves the linear equation $Ax = b$, which requires $O(d\log N/\epsilon)$ oracle query and has the successful rate with $O(1/\kappa)$ where N represents the dimension of the equation, $d$ the sparsity of the matrix, $\epsilon$ the target precision, and $\kappa$ the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works. His works are based on linear combination of operators, which improves on the complexity dependencies on the precision.
-
-\subsubsection{Overall Complexity}
-QRAM is necessary in model to demonstrate quantum speed up. We use QRAM in three procedures. First is to store the information about the mesh grid. Second is to store the interval results of the solver. Third is to help recover from the probabilistic error of performing a non-unitary transformation. Here we list the qubit,query and gate complexity of the whole process of our algorithm: the required qubit number is
 \begin{equation}
-O(\text{qnum})=O(2\log(4N)+\log(d\kappa \log(d\kappa/\epsilon)))
+\bm{A}^i=A(\vec{U}^{i-1},\hat{M})
+\end{equation}
+\begin{equation}
+\vec{b}^i=b(\vec{U}^{i-1},\hat{M}),
+\end{equation}
+from which we could generate quantum oracles necessary for the quantum linear solver. Here, $\bm{A}^i$ denotes the coefficient matrix, and $\vec{b}^i$ denotes the constant term, both in the $i^{th}$ iteration. $\hat{M}$ represents the quantum oracle for the mesh information. Then we will solve the following equation with quantum computer:
+\begin{equation}
+\bm{A}^i\Delta \vec{U}^i=\vec{b}^i.
+\end{equation}
+Finally, by adding the variation to the vector in the last step $\vec{U}^{i-1}$, this iteration step is over, that is
+\begin{equation}
+\vec{U}^i=\vec{U}^{i-1}+\Delta \vec{U}^i.
+\end{equation}
+
+\subsubsection{Overall complexity}
+QRAM is necessary in model to demonstrate quantum speed up. We use QRAM in three procedures. First is to store the information about the mesh. Second is to store the interval results of the solver. Third is to help recover from the probabilistic error of performing a non-unitary transformation. Here we list the qubit,query and gate complexity of the whole process of our algorithm: the required qubit number is
+\begin{equation}
+\mathcal{O}(\text{qnum})=\mathcal{O}(2\log(4N)+\log(d\kappa \log(d\kappa/\epsilon)))
 \end{equation}
 The QRAM and oracle query complexity is 
 \begin{equation}
-O(\text{query})=O(d\kappa^2\log^2(d\kappa/\epsilon))
+\mathcal{O}(\text{query})=\mathcal{O}(d\kappa^2\log^2(d\kappa/\epsilon))
 \end{equation}
 The gate complexity is 
 \begin{equation}
-O(d\kappa^2\log^2(d\kappa/\epsilon)\times poly(\log(4N)/\epsilon))
+\mathcal{O}(d\kappa^2\log^2(d\kappa/\epsilon)\times poly(\log(4N)/\epsilon))
 \end{equation}
 In Sec.~\ref{detail}, we will analyze in detail the complexity of each module of our algorithm.
 
@@ -202,59 +204,53 @@ In Sec.~\ref{detail}, we will analyze in detail the complexity of each module of
 	\resizebox{\textwidth}{!}{ \begin{tabular}{|c|c|c|c|c|}
 	\hline 
 	Iteration&Equation Solver&Data Between Each Step&Slowest Sub-procedure&Time complexity \\
-	 & & & &(n denotes the number of mesh grid)\\
+	 & & & &(n denotes the number of mesh cells)\\
 	\hline  
-	Yes&Classical&Classical&Multigrid Linear Equation Solver&$O(n)$\\
+	Yes&Classical&Classical&Multigrid Linear Equation Solver&$\mathcal{O}(n)$\\
 	\hline 
-	Yes&Quantum&Classical&Quantum Classical Converter&$O(n)$\\
+	Yes&Quantum&Classical&Quantum Classical Converter&$\mathcal{O}(n)$\\
 	\hline 
-	Yes&Quantum&Quantum&Quantum Linear System Solver (With QRAM)&$O(log(n))$\\
+	Yes&Quantum&Quantum&Quantum Linear System Solver (With QRAM)&$\mathcal{O}(log(n))$\\
 	\hline 
 	Yes&Quantum&Quantum&Impossible to implement (Without QRAM)&$-$\\
 	\hline 
 	\end{tabular} }
+	\label{ComparisonTable}
 \end{table*}
 
 \subsection{Simulation time of Classical Solution}
 
-The implicit Euler solver has the linear complexity. We declare this result with two proofs: in both theory and experiment. The theory shows that the classical solver uses multigrid method, which are expected to have the complexity $O(n)$ where $n$ denotes the number of mesh grids. We also did experiment on various grid size and calculates the running time (except the preparation). As the figure shows, that running time has a very good linearity to the mesh number.
+The implicit Euler solver has linear complexity. We support this result with two proofs: one from theory and the other from experiment. The theory shows that the classical solver uses a multigrid method, which is expected to have complexity $\mathcal{O}(n)$ where n denotes the number of mesh cells. We also performed an experiment on various grid sizes and calculated the running time (except the preparation). Figure \ref{su2Speed} shows that the runtimes exhibit very good linearity with the number of mesh cells.
+
 \begin{figure} 
 \centering
 \includegraphics[width=0.45\textwidth]{Fig/su2_speed.png}
 \caption{SU2 running time.} \label{su2Speed}
 \end{figure}
 
-It is unclear whether the time integration can be cancelled to avoid the iteration process. We here do not change the iteration process, that is, we have to seek a quantum approach with sublinear runtime between each iteration step.
+Whether the time integration can be cancelled to avoid the iteration process is unclear, but here we do not change the iteration process. Instead, we seek a quantum approach with a sublinear runtime between each iteration step.
 
 \subsection{Classical Simulation for Our Quantum Approach}
+We code this quantum-classical hybrid solver for CFD problem. In general, it is a combination of the SU2 and a quantum programming framework.
 
+In the classical simulation, simulating quantum oracles is vital in this work. Here we choose QPanda, because QPanda and its OriginIR (an intermediate representation) supports the definition and simulation of any quantum oracles. 
 
 \subsection{Possible Improvement on the Mesh Generation}
 Besides the acceleration in the time integration process, the mesh generation module can also be integrated in the quantum computer.
 
-In the above algorithm, we considered the mesh information as the oracle. A direct way is to generate the mesh file beforehand, and encode the classical data into the quantum computer. This way may cause a time complexity of $O(N)$. Instead of reading a pre-generated mesh file, we could replace the mesh generation program by a quantum algorithm. This method will be discussed in the detailed explanation.
+In the above algorithm, we considered the mesh information as the oracle. A direct way is to generate the mesh file beforehand, and encode the classical data into the quantum computer. This way may cause a time complexity of $\mathcal{O}(N)$. Instead of reading a pre-generated mesh file, we could replace the mesh generation program by a quantum algorithm. This method will be discussed in the detailed explanation.
 
 The solver requires an efficient quantum representation of the matrix A and constant b. In this problem, the set of the partial derivative equations should be linearized to generate the expression of A and b.
 
-\subsection{Further Developments}
-
-\subsubsection{Hardware-based investigation}
-
-\subsubsection{Requirements on the Future Quantum Computer}
+\subsection{Requirements on the Future Quantum Computer}
 
 To realize the effect of the acceleration of our quantum approach, we claim that the future quantum computer must meet the following requirements.
 
-\subparagraph{Fault-Tolerance}
-$\qquad\qquad\qquad\qquad\qquad$
- 
-Our algorithm accelerates the calculation in each iteration step, however, the number of iteration, as we investigated, would be much bigger when the number of the mesh grows. We do not perform quantum measurements to extract the result in each step. Instead, the quantum feature (entanglement, superposition) should be preserved during the whole calculation process. 
+\subparagraph{Fault-Tolerance} Our algorithm accelerates the calculation in each iteration step, however, the number of iteration, as we investigated, would be much bigger when the number of the mesh grows. We do not perform quantum measurements to extract the result in each step. Instead, the quantum feature (entanglement, superposition) should be preserved during the whole calculation process. 
 
 This feature of the algorithm implies the storage of the quantum state is not affected by the decoherence and noise. Only a fault-tolerant quantum computer can meet this demand.
 
-\subparagraph{Quantum Random Access Memory}
-$\quad\qquad\qquad$
-
-The quantum-classical hybrid algorithms are always facing the problem of the data conversion between the classical and the quantum.
+\subparagraph{Quantum random access memory} The quantum-classical hybrid algorithms are always facing the problem of the data conversion between the classical and the quantum.
 
 The problem is what the time complexity is to perform such conversions: between
 \begin{center}
@@ -262,29 +258,28 @@ $ \sum|addr\rangle|data\rangle\ $ (Quantum Memory)
 \end{center}
 and classical memory.
 
-A trivial way of the quantum-to-classical is to do with repeatedly measurements, or as people always mention "quantum tomography". The trivial classical-to-quantum is to encode the state preparation phase in the quantum circuit by using a group of controlled rotation operations. These ways are trivial because they consume $O(2^n)$ time, while we think it is not efficient. If the quantum-classical conversion is not implemented efficiently, many quantum algorithms will never realize the sublinear time complexity, because the input and the output will at least consume linear time.
+A trivial way of the quantum-to-classical is to do with repeatedly measurements, or as people always mention "quantum tomography". The trivial classical-to-quantum is to encode the state preparation phase in the quantum circuit by using a group of controlled rotation operations. These ways are trivial because they consume $\mathcal{O}(2^n)$ time, while we think it is not efficient. If the quantum-classical conversion is not implemented efficiently, many quantum algorithms will never realize the sublinear time complexity, because the input and the output will at least consume linear time.
 
-To solve this problem, we have to assume the existence of the quantum random access memory (QRAM). The QRAM is a structure where we could save and load quantum information efficiently. Different as the trivial way, the QRAM operates the address in the superposition. It enables the digital form quantum data (compared to the analog form, as described in Supplementary Chapter QDAC/QADC) to be loaded and stored in parallel with the time complexity $O(log N)$.
+To solve this problem, we have to assume the existence of the quantum random access memory (QRAM). The QRAM is a structure where we could save and load quantum information efficiently. Different as the trivial way, the QRAM operates the address in the superposition. It enables the digital form quantum data (compared to the analog form, as described in Supplementary Chapter QDAC/QADC) to be loaded and stored in parallel with the time complexity $\mathcal{O}(\log N)$.
 
-Although the concept of the QRAM is proposed early and many works were based on this model, it is controversial whether a QRAM could exist, because the architecture of the QRAM remains an open question. We take this risk because we believe that if quantum computer wants to solve a realistic problem with sublinear complexity, the QRAM must exists. We will prove that this problem would not be sublinear without QRAM.
-
+We believe that if quantum computer wants to solve realistic CFD problems with sublinear complexity, the QRAM must exist. We will prove it in the Section \ref{NecessityQRAM}.
 
 \section{Detailed Explanation}\label{detail}
 In this section, we use the following symbols:
 
 \begin{itemize}
-\item $N$: number of mesh
-\item $m=log(4N)$
+\item $N$: number of mesh cells
+\item $m=\log(4N)$
 \item $q_f$: qubit number to represent a float number
 \item IterTimes: Iteration times
 \item $|\vec{U}\rangle$: represents $\vec{U}=(\rho,\rho u, \rho\nu, \rho E)$, which dimension is $4N$
-\item $\vec{u}_i$: variables on the mesh $i$ 
+\item $\vec{U}_i$: variables on the cell $i$ 
 \end{itemize}
 \subsection{FVM method}\label{classicalFVM}
 
-An important applicaiton of modern Computational Fluid Dynamics (CFD) is to simulate systems in aircraft aerodynamic design. The usual classical algorithm often means high complexity, which forces us in seeking for more effective computations, e.g., a quantum-hybrid solution.
+An important application of modern CFD is simulating systems in aircraft aerodynamic design. The usual application of classical algorithms often develops high complexity, forcing more effective and efficient means of computation to be sought, such as quantum--classical hybrid solutions.
 
-For briefness, we assumed the flow to be 2D, inviscid and steady, then gained the Euler equation \cite{euler1757principes}, a special form of the Navier-Stokes equations:
+For brevity, we assume the flow to be two-dimensional, inviscid, and steady, and simply state the Euler equations\cite{euler1757principes}, a special form of the Navier--Stokes equation:
 \begin{align}\label{eq:differential_equation}
 \frac{\partial U}{\partial t} + \nabla \cdot \bm{F} = 0
 \end{align}
@@ -319,7 +314,7 @@ U = \left[
 \end{array}
 \end{equation}
 
-In these equations, we have the density $\rho$, the momentum $\rho\bm{V}=\left(\rho u, \rho v\right)$, the enthalpy $H$ and so on, which were defined below:
+In these equations, we have density $\rho$, momentum $\rho\bm{V}=\left(\rho u, \rho v\right)$, p the pressure, and $H$ the enthalpy, which is defined as:
 \begin{equation}
 \left\{
 \begin{array}{l}
@@ -338,7 +333,8 @@ For any volume $\Omega$ and its boundary $\partial\Omega$, Formula.\ref{eq:diffe
 	\frac{\partial}{\partial t}\int_\Omega U d V + \oint_{\partial \Omega} \bm{F} \cdot d \bm{S} = 0
 \end{align}
 
-One effective approach to solve the equation shown above is the Finite Volume Method (FVM) \cite{eymard2000finite}. To solve the partial differential equations (PDE), discretization with numerical grid is necessary. Each spatial point is a node, identified by a set of indices, e.g. $\left(i, j\right)$ in the 2-D case, and several nodes combine a lattice. Midpoints of edges and centerpoints of adjacent lattices define a cell \cite{economon2015su2}. The equation of conservation was applied to each cell of the grid. With discretization of space, the calculus operations in PDE could also be changed to their numerical approximations. We chose implicit Euler scheme to deal with the time differential.
+One effective approach to solve the conservation equation is the Finite Volume Method (FVM) \cite{eymard2000finite}. To solve the partial differential equations, discretization using numerical grid is necessary. Each spatial point is a node, identified by a set of indices; for example, $\left(i, j\right)$ in the 2-D case, and the set of nodes linked via their nearest neighbors combine to form a lattice. The midpoints of the lines between two adjacent nodes and the centerpoints of adjacent lattices determine the cell surrounding a node \cite{economon2015su2}. The conservation equation is applied to each cell of the grid. With this spatial discretization, the operations of calculus—the partial differentials—are replaced by their numerical approximations. We chose the implicit Euler scheme to deal with the time differential.
+
 \begin{figure}[h]
 	\centering  
 	\includegraphics[width=0.7\linewidth]{Fig/grid}
@@ -346,29 +342,30 @@ One effective approach to solve the equation shown above is the Finite Volume Me
 	\label{fig:sample_of_cell}
 \end{figure}
 
-As illustrated in Figure.\ref{fig:sample_of_cell}, Formula.\ref{eq:integral_equation} was discretized to:
+As depicted in Figure~\ref{fig:sample_of_cell}, equation~\ref{eq:integral_equation} discretizes to
 \begin{align}
-	\frac{\Omega_{i, j}}{\Delta t}\left(U^{n+1}_{i, j}-U^{n}_{i, j} \right) = -\sum_{faces}\bm{F}^{n+1}\cdot\Delta\bm{S}^{n+1} = -R^{n+1}_{i, j}
+  \frac{\Omega_{i, j}}{\Delta t}\left(U^{n+1}_{i, j}-U^{n}_{i, j} \right) = -\sum_{faces}\bm{F}^{n+1}\cdot\Delta\bm{S}^{n+1} = -R^{n+1}_{i, j}
 \end{align}
-
-Introduced to the concept of artificial dissipation by some common method, $\bm{F}^\prime_{i+\frac{1}{2}, j}$ matching with $\Delta\bm{S}^\prime_{i+\frac{1}{2}, j}$ satisfied \cite{hirsch2007numerical} \cite{jameson1981numerical}:
+Introducing the concept of artificial dissipation, $\bm{F}^\prime_{i+\frac{1}{2}, j}$ in terms of $\Delta\bm{S}^\prime_{i+\frac{1}{2}, j}$ satisfies \cite{hirsch2007numerical} \cite{jameson1981numerical}:
 \begin{align}
 \begin{split}
-    \bm{F}^\prime_{i+\frac{1}{2}, j} =& \frac{1}{2}\left(\bm{F}_{i, j} + \bm{F}_{i + 1, j}\right) - \frac{1}{2}\big[\kappa^{\left(2\right)}\left(U_{i+1, j}-U_{i, j}\right)\\
+    \bm{F}^\prime_{i+\frac{1}{2},j} =& \frac{1}{2}\left(\bm{F}_{i,j} + \bm{F}_{i+1, j}\right)
+    - \frac{1}{2}\big[\kappa^{\left(2\right)}\left(U_{i+1, j}-U_{i, j}\right)\\
     &+\kappa^{\left(4\right)}\left(U_{i+2, j}-3 U_{i+1, j}+3 U_{i, j}-U_{i-1, j}\right)\big]\\
-    &\times\left[\frac{1}{2}\left(\bm{V}_{i, j} + \bm{V}_{i + 1, j}\right) + \sqrt{\gamma \frac{p}{\rho}}\frac{\Delta\bm{S}^\prime_{i+\frac{1}{2}, j}}{\left|\Delta\bm{S}^\prime_{i+\frac{1}{2}, j}\right|}\right]
+    &\times\left[\frac{1}{2}\left(\bm{V}_{i, j} + \bm{V}_{i + 1, j}\right) 
+    + \sqrt{\gamma \frac{p}{\rho}}\frac{\Delta\bm{S}^\prime_{i+\frac{1}{2}, j}}
+{\left|\Delta\bm{S}^\prime_{i+\frac{1}{2}, j}\right|}\right]
 \end{split}
 \end{align}
-where $\kappa^{\left(2\right)}$ and $\kappa^{\left(4\right)}$ are arbitrary non-dimensional coefficients, which we assumed to be $\frac{1}{2}$ and $\frac{1}{64}$.
+where $\kappa^{\left(2\right)}$ and $\kappa^{\left(4\right)}$ are arbitrary non-dimensional coefficients that we assume to be $\frac{1}{2}$ and $\frac{1}{64}$.
 
-Let $\Delta U^{n}$ be equal to $U^{n+1}-U^{n}$, and consider the $k-th$ components of $U$ \cite{economon2015su2}:
+Let $\Delta U^{n}$ be equal to $U^{n+1}-U^{n}$, and consider the $k-th$ components of $U$ \cite{economon2015su2}; then
 \begin{align}
-	\left(\frac{\Omega_{i, j}}{\Delta t}\delta_{i, i^\prime}\delta_{j, j^\prime}+\left.\frac{\partial R_{i,j,k}}{\partial U_{i^\prime,j^\prime,k^\prime}}\right|_{U=U^n}\right)\Delta U^{n}_{i^\prime,j^\prime,k^\prime} = -R^{n}_{i,j,k}
+\left(\frac{\Omega_{i, j}}{\Delta t}\delta_{i, i^\prime}\delta_{j, j^\prime}
++\left.\frac{\partial R_{i,j,k}}{\partial U_{i^\prime,j^\prime,k^\prime}}\right|_{U=U^n}\right) \Delta U^{n}_{i^\prime,j^\prime,k^\prime} = -R^{n}_{i,j,k}
 \end{align}
 
-We got an iterative problem with solving linear systems ($\mathcal{A} \Delta U = \bm{b}$). The residual $R^{n}$ tended toward zero, then the stable solution ($\frac{\partial U}{\partial t} = 0$) would be gained. And the quantum algorithms are effective at solving linear systems. We could build quantum circuits to accomplish the calculation. As against indulging in classical methods, fetching the quantum superiority might be more attractive.
-
-
+We arrive at an iterative problem that requires solving a linear system ($\mathcal{A} \Delta U = \bm{b}$). The residual $R^{n}$ tends toward zero, and hence a stable solution ($\frac{\partial U}{\partial t} = 0$) is obtained. Quantum algorithms are effective at solving such linear systems. We could build quantum circuits to accomplish the calculation. Rather than making use of classical methods, exploiting quantum superiority might be more attractive.
 
 \subsection{Initialization}
 
@@ -378,7 +375,7 @@ The initial value of  each $\vec{u}_i$ is the same, we assume the initial value 
 \begin{equation}
 |\vec{U}^0\rangle=C_0\sum_{i=0}^{4N-1}{x_{i\%4}|i\rangle}
 \end{equation}
-where $C_0=\frac{1}{\sqrt{N\sum_{i=0}^{3}{x_i^2}}}$, $|\vec{U}^0\rangle$ can be prepared with a $O(1)$ length quantum circuit, the quantum circuit is shown in fig.~\ref{state_initialization}.
+where $C_0=\frac{1}{\sqrt{N\sum_{i=0}^{3}{x_i^2}}}$, $|\vec{U}^0\rangle$ can be prepared with a $\mathcal{O}(1)$ length quantum circuit, the quantum circuit is shown in fig.~\ref{state_initialization}.
 
 \begin{figure}[htbp]
     \subfigure{\includegraphics[width=0.30\textwidth]{Fig/state_initialization.png}}
@@ -389,7 +386,7 @@ Similarly, we can also construct the digital version of $\vec{U}^0$, which is wr
 \begin{equation}
 |\vec{d}_U^0\rangle=\sum_i{|i\rangle|U_i\rangle}
 \end{equation}
-the corresponding quantum circuit of $|\vec{d}_U^0\rangle$ is shown in fig.~\ref{digit_state_initialization}.In this process, we need $2m$ qubits and gete complexity is $O(1)$.
+the corresponding quantum circuit of $|\vec{d}_U^0\rangle$ is shown in fig.~\ref{digit_state_initialization}.In this process, we need $2m$ qubits and gete complexity is $\mathcal{O}(1)$.
 
 \begin{figure}[htbp]
     \subfigure{\includegraphics[width=0.30\textwidth]{Fig/digit_state.png}}
@@ -408,111 +405,116 @@ M_U\frac{1}{\sqrt{4N}}\sum_i{|i\rangle|0\rangle}=\frac{1}{\sqrt{4N}}\sum_i{|i\ra
 
 \subsubsection{Meshing scheme oracle}
 
-Meshing scheme oracle is used to encode meshing scheme into quantum circuit. We define two meshing scheme oracles: $O_{adjacent}$ and $O_{coor}$. $O_{adjacent}$ is used to extract the adjacent grid number of a specific grid, it can be writen as:
+The meshing scheme oracle is used to encode the meshing scheme into the quantum circuit. We define two such oracles: $O_{adjacent}$ and $O_{coor}$. $O_{adjacent}$ is used to extract the adjacent grid number of a specified grid and is written
 \begin{equation}
-O_{adjacent}|i\rangle|j\rangle=|i\rangle|g(i,j)\rangle
+O_{adjacent}|i\rangle|j\rangle=|i\rangle|g(i,j)\rangle,
 \end{equation}
-it means $j-th$ adjacent grid number of grid $i$ is $g(i,j)$. $O_{coor}$ is used to extract coordinates of a grid:
+that is, the $j-th$ adjacent grid number of grid $i$ is $g(i,j)$. $O_{coor}$ is used to extract the coordinates of a grid,
 \begin{equation}
-O_{coor}|i\rangle|0\rangle=|i\rangle|\vec{x}_i\rangle
+O_{coor}|i\rangle|0\rangle=|i\rangle|\vec{x}_i\rangle.
 \end{equation}
-Here $\vec{x}_i$ means the coordinates of each corner of the grid $i$. We can get other position information with $O_{coor}$, such as grid center of gravity coordinates, the normal to each side of the grid $i$ and so on.
+Here $\vec{x}_i$ denotes the coordinates of each corner of grid $i$. We can get other positional information with $O_{coor}$, such as the coordinates for the center of gravity of the grid and the normal to each edge of the grid $i$.
 
-The number of qubits required to construct $O_{adjacent}$ and $O_{coor}$ is $2(m-2)$, $m-2+C_0q_f$ respectively, here $C_0q_f$ is a qubit sequence represents coordinate information and other position information obtained from grid coordinates, and $C_0$ is a constant number.
+The number of qubits required to construct $O_{adjacent}$ and $O_{coor}$ is $2(m-2)$, $m-2+C_0q_f$, respectively; here $C_0q_f$ is a qubit sequence representing coordinate information and other positional information obtained from the grid coordinates, and $C_0$ is a constant number.
 
-The construction complexity of $O_{adjacent}$ and $O_{coor}$ is related to the complexity of the meshing scheme. In our method, we assume the complexity of the meshing scheme is $O(poly(log(N)))$, so the complexity of $O_{adjacent}$ and $O_{coor}$ is $O(poly(log(N)))$. 
+The construction complexity of $O_{adjacent}$ and $O_{coor}$ is related to the complexity of the meshing scheme. In our method, we assume this complexity is $\mathcal{O}({\rm poly}(\log(N)))$, so the complexity of $O_{adjacent}$ and $O_{coor}$ is $\mathcal{O}({\rm poly}(\log(N)))$. 
 
-After initialization, we execute iteration process, which contains three sub-processes: preprocessing, quantum linear solver and postprocessing.
+After initialization, we execute the iteration process, which contains three sub-processes: preprocessing, quantum linear solver, and postprocessing.
 
 \subsection{Preprocessing}
-
-In preprocessing step, we construct the oracles which represent matrix $A$ and vector $\vec{b}$ in one iteration process. In this step, we use the QRAM $M_U$ and oracles $O_{adjacent}$ and $O_{coor}$ to construct $O_l$, $O_b$ and $O_A$. 
+In the preprocessing step, we construct the oracles that represent matrix $A$ and vector $\vec{b}$ in one iteration process. In this step, we use the QRAM $M_U$ and oracles $O_{adjacent}$ and $O_{coor}$ to construct $O_l$, $O_b$, and $O_A$.
 
 \subsubsection{Oracle $O_l$}
-$O_l$ can be written as:
+The action of $O_l$ on the states may be written as
 \begin{equation}
-O_l|i\rangle|j\rangle=|i\rangle|f(i,j)\rangle
+O_l|i\rangle|j\rangle=|i\rangle|f(i,j)\rangle,
 \end{equation}
-$f(i,j)$ represents column number of the $j-th$ nonzero element of $A$'s $i-th$ row. We use $O_{adjacent}$ to construct. $f(i,j)$ can be written as:
+where $f(i,j)$ represents the column number of the $j-th$ nonzero element of the $i-th$ row of $A$. We use $O_{adjacent}$ to construct $f(i,j)$, which may be written as
 \begin{equation}
-f(i,j)=4g(i/4,j/4)+j\%4
+f(i,j)=4g(i/4,j/4)+j\%4.
 \end{equation}
-There is a trick to construct the quantum circuit of this process, as shown in fig.\ref{OL} we just operate $O_{adjacent}$ on the highest $log(N)$ qubits of $i$ and $j$, then in the whole space of $|i\rangle$ and $|j\rangle$, we have constructed the $O_l$. The required qubit number is $2m$ in this process. 
+There is a trick in constructing the quantum circuit of this process (Fig.~\ref{fig:OL}). We simply operate $O_{adjacent}$ on the highest $\log(N)$ qubits of $i$ and $j$; then, in the entire space of $|i\rangle$ and $|j\rangle$, we have constructed $O_l$. The required number of qubits is $2m$ in this process.
 
 \begin{figure}[htbp]
     \subfigure{\includegraphics[width=0.30\textwidth]{Fig/OL.png}}
     \caption{$O_l$ quantum circuit. }
-    \label{OL}
+    \label{fig:OL}
 \end{figure}
 
-
 \subsubsection{Oracle $O_b$}
-$O_b$ can be written as:
+The action of $O_b$ on the state $|0\rangle$ may be written
 \begin{equation}
-O_b|0\rangle=\sum_i{b_i|i\rangle}
+O_b|0\rangle=\sum_i{b_i|i\rangle}.
 \end{equation}
-As shown in Sec.~\ref{classicalFVM}, the $\vec{b}$ represents the residual $\vec{R}$, and we find $R_i$ is a function of variables and coordinates of $(i/4)-th$ and its adjacent grids. In special, the expression of these functions is regular. In specific, $R_i$'s expression format is only related to $i\%4$, so we can efficiently construct $R_i$. To construct $O_b$, we need a QRAM which restores $\vec{U}$, we define:
+As stated in Sec.~\ref{classicalFVM}, $\vec{b}$ represents the residual $\vec{R}$. We find $R_i$ is a function of variables and coordinates of the $(i/4)-th$ cell and its adjacent cells. In particular, the expression for these functions is regular; specifically, the expression for $R_i$ is only related to $i\%4$ , so we can construct $R_i$ efficiently. To construct $O_b$, we need a QRAM, which restores $\vec{U}$. We define
 \begin{equation}
-M_U|i\rangle|0\rangle=|i\rangle|U_i\rangle
+M_U|i\rangle|0\rangle=|i\rangle|U_i\rangle.
 \end{equation}
-We can use $M_U$, $O_l$, $O_{coor}$ to construct $O_b$, as shown in fig.\ref{OB}, we first get the related variables and coordinates:
+
+We can use $M_U$, $O_l$, $O_{coor}$ to construct $O_b$ (Fig.\ref{fig:OB}). First, we get the related variables and coordinates,
 \begin{equation}
-|i\rangle|U_{related}\rangle|x_{related}\rangle
+|i\rangle|U_{related}\rangle|x_{related}\rangle.
 \end{equation}
-Then, we compute $R_i$ and get
+Then, we compute $R_i$ and obtain
 \begin{equation}
-|i\rangle|U_{related}\rangle|x_{related}\rangle|R_i\rangle
+|i\rangle|U_{related}\rangle|x_{related}\rangle|R_i\rangle.
 \end{equation}
-Next, release $|U_{related}\rangle$ and $|x_{related}\rangle$,
+Next, we uncompute $|U_{related}\rangle$ and $|x_{related}\rangle$,
 \begin{equation}
-|i\rangle|R_i\rangle
+|i\rangle|R_i\rangle.
 \end{equation}
-Finally, operate QDAC and we finish this process:
+Finally, we operate with QDAC and finish this process,
 \begin{equation}
-\sum_i{b_i|i\rangle}
+\sum_i{b_i|i\rangle}.
 \end{equation}
 
 \begin{figure}[htbp]
     \subfigure{\includegraphics[width=0.30\textwidth]{Fig/Ob.png}}
     \caption{$O_b$ quantum circuit. }
-    \label{OB}
+    \label{fig:OB}
 \end{figure}
 
-In this process, the required qubit number is $m+C_bq_f$, $C_bq_f$ is an ancilla qubit sequence used to compute $b_i$, it can also be used in QDAC quantum circuit. We assume the success rate of QDAC is $p_{QDAC}$, then the number of times $M_U$, $O_{adjacent}$ and $O_{coor}$ are used is $O(1/p_{QDAC})$. The gate complexity is $O(poly(m)/p_{QDAC}+poly(1/\epsilon p_{QDAC}))$, $\epsilon$ represents QDAC accuracy.
-
+In this process, the required number of qubits is $m+C_bq_f$, $C_bq_f$ is an ancilla qubit sequence used to compute $b_i$; it can also be used in QDAC quantum circuit. We assume the success rate of QDAC is $p_{QDAC}$, then the number of times $M_U$, $O_{adjacent}$ and $O_{coor}$ are used is $\mathcal{O}(1/p_{QDAC})$. The gate complexity is $\mathcal{O}({\rm poly}(m)/p_{QDAC}+poly(1/\epsilon p_{QDAC}))$, with $\epsilon$ representing the QDAC accuracy.
 
 \subsubsection{Oracle $O_A$}
-$O_A$ can be written as:
+The action of operator $O_A$ on the states may be written as
 \begin{equation}
-O_A|i\rangle|j\rangle|z\rangle=|i\rangle|j\rangle|z\oplus A_{ij}\rangle
+O_A|i\rangle|j\rangle|z\rangle=|i\rangle|j\rangle|z\oplus A_{ij}\rangle.
 \end{equation}
-To construct $O_A$, we also need $M_U$, $O_l$ and $O_{coor}$. As shown in Sec.\ref{classicalFVM}, matrix $A$ is a sparse matrix and the element $A_{4i_0+i_1,4j_0+j_1}\neq0$ only if grid $i_0$ and $j_0$ are adjacent, here $i_0,j_0\in[0,N-1]$ and $i_1,j_1\in[0,3]$, we have $i=4i_0+i_1$ and $j=4j_0+j_1$. $A_{4i_0+i_1,4j_0+j_1}$ is a function of variables and coordinates of grid $i_0$ and $j_0$, it can be written as
+To construct $O_A$, we also need $M_U$, $O_l$, and $O_{coor}$. As stated in Sec.~\ref{classicalFVM}, matrix $A$ is sparse and the element $A_{4i_0+i_1,4j_0+j_1} $ is nonzero only if grid $i_0$ and $j_0$ are adjacent; here $i_0,j_0\in[0,N-1]$ and $i_1,j_1\in[0,3]$, and hence we have $i=4i_0+i_1$ and $j=4j_0+j_1$. Element $A_{4i_0+i_1,4j_0+j_1}$ is a function of variables and coordinates of the grid $i_0$ and $j_0$ that may be written
 \begin{equation}
-A_{4i_0+i_1,4j_0+j_1}=f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})
+A_{4i_0+i_1,4j_0+j_1}=f_{i_0,i_1,j_0,j_1}
+(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}).
 \end{equation}
-Here the format of funcitons $f_{i_0,i_1,j_0,j_1}$ for different $i_0,i_1,j_0,j_1$ are also regular, it can be divided into two types:$i_0=j_0$ and $i_0\neq j_0$, and each type contains 16 conditions, corresponding to different $i_1$ and $j_1$. So we can efficiently construct $O_A$.
+Here the form of the functions $f_{i_0,i_1,j_0,j_1}$ for different $i_0,i_1,j_0,j_1$ are also regular, They can be divided into two types: $i_0=j_0$ and $i_0\neq j_0$, with each type containing 16 conditions, corresponding to the different $i_1$ and $j_1$. Hence, we can efficiently construct $O_A$.
 
 To compute $A_{4i_0+i_1,4j_0+j_1}$, we first construct
 \begin{equation}
-|4i_0+i_1,4j_0+j_1\rangle|\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}\rangle
+|4i_0+i_1,4j_0+j_1\rangle|\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}\rangle.
 \end{equation}
-Then $f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})$  is an arithmetic expression of $\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}$, we get
+Then $f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})$ is an arithmetic expression of $\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}$. We then obtain
+
+\begin{align}
+|4i_0+i_1,4j_0+j_1\rangle&|\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}\rangle\\
+&|f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})\rangle.
+\end{align}
+
+Finally, we uncompute $\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}$,
 \begin{equation}
-|4i_0+i_1,4j_0+j_1\rangle|\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}\rangle|f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})\rangle
+|4i_0+i_1,4j_0+j_1\rangle|0,0,0,0\rangle
+|f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})\rangle.
 \end{equation}
-Finally, uncompute $\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}$,
-\begin{equation}
-|4i_0+i_1,4j_0+j_1\rangle|0,0,0,0\rangle|f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})\rangle
-\end{equation}
-And we realize $O_A$, the corresponding quantum circuit is shown in fig.~\ref{OA} 
+We thus realize $O_A$; the corresponding quantum circuit is shown in Fig.~\ref{fig:OA}.
+
 \begin{figure}[htbp]
     \subfigure{\includegraphics[width=0.30\textwidth]{Fig/OA.png}}
     \caption{$O_A$ quantum circuit. }
-    \label{OA}
+    \label{fig:OA}
 \end{figure}
-In this process,the number of times $M_U$, $O_{adjacent}$ and $O_{coor}$ are used is $O(1)$. The required qubit number is $2m+C_Aq_f$, $C_Aq_f$ is a ancilla qubit sequence used to compute $A_{ij}$. The gate complexity is $O(poly(m))$. $A_{ij}$'s expression is more complicated than $b_i$, so $C_A>=C_b$, the qubit number used in $O_l,O_b,O_A$ is $2m+C_Aq_f$.
 
-\subsection{Necessity of QRAM}
+In this process, the number of times $M_U$, $O_{adjacent}$, and $O_{coor}$ are used is $\mathcal{O}(1)$. The required number of qubits is $2m+C_Aq_f$, with $C_Aq_f$ being an ancilla qubit sequence used to compute $A_{ij}$. The gate complexity is $\mathcal{O}({\rm poly}(m))$. The expression of $A_{ij}$ is more complicated than $b_i$, so $C_A>=C_b$, and the number of qubits used in $O_l,O_b,O_A$ is $2m+C_Aq_f$.
+
+\subsection{Necessity of QRAM}\label{NecessityQRAM}
 
 QRAM is a quantum analogue to the classical Random Access Memory (RAM). QRAM enables the user obtaining the data in the QRAM efficiently while the address is given in the superposition state. 
 \begin{equation}
@@ -520,28 +522,28 @@ QRAM: \sum_i{|i\rangle|0\rangle}=\sum_i{|i\rangle|U_i\rangle}
 \end{equation}
 The $U_i$ denotes the classical data encoded in the quantum states.
 
-There were several QRAM models proposed in the previous works. A typical one is to implement the QRAM by a set of optical devices, requiring O(log N) operations (N denotes the memory length). Another more straightforward approach is to realize it with the decomposition of the quantum circuits. However, although the addressing part is realized in O(log N), the state generation part involves O(N) multi-controlled NOT gates, which should not be considered as an efficient plan.
+There were several QRAM models proposed in the previous works. A typical one is to implement the QRAM by a set of optical devices, requiring $\mathcal{O}(log N)$ operations (N denotes the memory length). Another more straightforward approach is to realize it with the decomposition of the quantum circuits. However, although the addressing part is realized in $\mathcal{O}(log N)$, the state generation part involves $\mathcal{O}(N)$ multi-controlled NOT gates, which should not be considered as an efficient plan. Here we will introduce an efficiently QRAM only requiring $\mathcal{O}(log N)$ operations in our plan.
 
-We will introduce an efficiently QRAM only requiring O(log N) operations in our plan. We have to mention that the QRAM is never fabricated in real, which will be one of the drawbacks.
+\subparagraph{Overall Complexity without QRAM} The classical problem has linear complexity, which greatly constrains the design of the quantum methods, especially quantum--classical hybrid methods. 
 
-\subparagraph{Overall Complexity without QRAM} The classical problem has linear complexity, which greatly constrains the design of the quantum methods, especially quantum-classical hybrid methods. 
+It is already known that if one wants to transfer fully components of quantum states into classical memory, at least $O(n)$ times the storage is needed. The pure classical solver uses time integration, an iteration process that is unavoidably necessary. If the result is stored in quantum states with any quantum solver, and we expect the data transferred between each step of the iteration are classical, the “quantum--classical converter” process is inevitable and an $O(n)$ interval of time is consumed, and no acceleration occurs (second case in the Table \ref{ComparisonTable}).
 
-It is already known that, if someone wants to fully convert components in quantum states to a classical memory, it uses at least $O(n)$ times. The pure classical solver uses time integration, an iteration process being necessary. If the result is stored in the quantum states with any quantum solver, and we expect data transferred between each step of the iteration are classical, the “quantum-classical converter” process is inevitable and $O(n)$ time is consumed, and no acceleration exists (second case in the table.~\ref{tab2}).
-
-For the fourth case of the table.~\ref{tab2}, we declare it impossible to implement such a plan in real. The problem is the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As we have mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we will prove formally that this process cannot be implemented by a linear operator, which is considered as fundamental for the quantum mechanics. The proof is written in the Supplementary Information.
+For the fourth case of the same table, we claim such a plan impossible to implement in practice. The problem is that the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we shall prove formally that this process cannot be implemented by a linear operator. Such operators are considered fundamental in quantum mechanics. The proof is developed in Supplementary Information.
 
 \subsection{Quantum Linear Solver}
 
-After the Linearization, we know change the problem into solving the linear
-equation. Our goal is to output a state 
+After linearization, the problem is converted into one solving a linear equation. Our objective is to output a state, 
 \begin{equation}
 |\tilde{x}\rangle:=\frac{\Sigma_i \tilde{x}_i|i\rangle}
-{\lVert \Sigma_i \tilde{x}_i |i\rangle\rVert}
+{\lVert \Sigma_i \tilde{x}_i |i\rangle\rVert}\notag
 \end{equation}
-such that, $\lVert |\tilde{x}\rangle-|x\rangle\rVert\leqslant\epsilon$. 
-The amplitude of $|x\rangle$ satisfy $\vec{x}=A^{-1}\vec{b}$
+such that $\lVert |\tilde{x}\rangle-|x\rangle\rVert\leqslant\epsilon$. The amplitude of $|x\rangle$ satisfies $\vec{x}=A^{-1}\vec{b}$
 
-\subsubsection{Overall Circuit and Qubit Number}
+The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The algorithm solves the linear equation $Ax = b$, which requires $\mathcal{O}(d\log N/\epsilon)$ oracle query and has the successful rate with $\mathcal{O}(1/\kappa)$ where N represents the dimension of the equation, $d$ the sparsity of the matrix, $\epsilon$ the target precision, and $\kappa$ the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works. His works are based on linear combination of operators, which improves on the complexity dependencies on the precision.
+
+We here use the version of Andrew Childs's Chebyshev approach of the quantum linear solver as the accelerator of the calculation. 
+
+\subsection{Overall Circuit and Qubit Number}
 Base on the analyse above, the overall algorithm can be represented as 
 following
 \begin{figure}[htbp]
@@ -551,21 +553,21 @@ following
 \label{o}
 \end{figure}
 
-In Fig.~\ref{o}, $t=O(log(j_0))$ is the qubits for control bits $\frac{1}
+In Fig.~\ref{o}, $t=\mathcal{O}(log(j_0))$ is the qubits for control bits $\frac{1}
 {\sqrt{\alpha}}\sum_i\sqrt{\alpha_i}|i\rangle$. The total qubits number is 
 \begin{equation}
 2(m+1)+t+C_Aq_f
 \end{equation}
 
-\subsubsection{Complexity and Successful probability}
+\subsection{Time Complexity and Successful Probability}
 In \cite{doi:10.1137/16M1087072}, function $1/x$ can be $\epsilon$ approximated by
 linear combination of Chebyshev polynomials with highest order 
-$O(j_0)=O(d\kappa log(d\kappa/\epsilon))$, the total
-query complexity is $O(\alpha j_0)$. Because $\alpha\leqslant 4j_0/d$,
-$O(\alpha j_0)=O(d\kappa^2log^2(d\kappa/\epsilon))$. The total number of 
-$\mathcal{P}_B$ is $O(\alpha)$.
+$\mathcal{O}(j_0)=\mathcal{O}(d\kappa log(d\kappa/\epsilon))$, the total
+query complexity is $\mathcal{O}(\alpha j_0)$. Because $\alpha\leqslant 4j_0/d$,
+$\mathcal{O}(\alpha j_0)=\mathcal{O}(d\kappa^2log^2(d\kappa/\epsilon))$. The total number of 
+$\mathcal{P}_B$ is $\mathcal{O}(\alpha)$.
 
-In \cite{7354428}, the gate complexity is $O(d\kappa^2log^2(d\kappa/
+In \cite{7354428}, the gate complexity is $\mathcal{O}(d\kappa^2log^2(d\kappa/
 \epsilon)(logN+log^{2.5}(d\kappa/\epsilon))$
 and the success probability is 
 $(\lVert F|b\rangle\rVert/\alpha)^2$. 
@@ -592,7 +594,7 @@ Next, execute adder on $|\Delta U_i^n\rangle$ and $|U_i^n\rangle$
 \begin{equation}
 \sum_i{|i\rangle|\Delta U_i^{n+1}\rangle|U_i^n\rangle}
 \end{equation}
-Finally, release $|U_i^n\rangle$ with $M_U^{\dagger}$
+Finally, uncompute $|U_i^n\rangle$ with $M_U^{\dagger}$
 \begin{equation}
 \sum_i{|i\rangle|\Delta U_i^{n+1}\rangle|0\rangle}
 \end{equation}
@@ -602,123 +604,97 @@ The quantum circuit is shown as follows: FIG. \ref{postprocessing_qcir}
 	 \caption{The quantum circuit of the postprocessing.}
 	\label{postprocessing_qcir}
    \end{figure}
-We get the $d_U^{n+1}$ and update $M_U$ with $d_U^{n+1}$. In this process, the qubit number is $m+2q_f$. We use $M_U$ two times,QADC one time and execute quantum adder, the gate complexity is $O(poly(m))+L(QADC)$.
+We get the $d_U^{n+1}$ and update $M_U$ with $d_U^{n+1}$. In this process, the qubit number is $m+2q_f$. We use $M_U$ two times,QADC one time and execute quantum adder, the gate complexity is $\mathcal{O}(poly(m))+L(QADC)$.
 
 
 \subsection{classical information extraction}
-Classical information extraction is the last step of our quantum algorithm. 
-The final evolution of our algorithm is about digital-encoded states
-$|\vec{U}\rangle$ which is stored in the QRAM. 
-The process of classical information extraction is as follows: 
-Read digital-encoded states $|\vec{U}\rangle$ from QRAM, 
-then through QDAC becomes analog-coded state $\left| \psi  \right\rangle  = C\sum\limits_{k = 1}^N {{U_k}\left| k \right\rangle } $,
-where $C = \sqrt {{1 \mathord{\left/
-{\vphantom {1 {\left( {\sum\nolimits_{j = 1}^N {U_j^2} } \right)}}} \right.
-\kern-\nulldelimiterspace} {\left( {\sum\nolimits_{j = 1}^N {U_j^2} } \right)}}} $.
-Finally, measuring the analog-coded state $\left| \psi  \right\rangle $.
+Classical information extraction is the last step of our quantum algorithm. The final evolution of our algorithm is about digital-encoded states $|\vec{U}\rangle$, which are stored in QRAM. The process of classical information extraction is as follows: Read digital-encoded states $|\vec{U}\rangle$ from QRAM, and then through QDAC they become the analog-coded states $\left| \psi \right\rangle = C\sum\limits_{k = 1}^N {{U_k}\left| k \right\rangle}$, where $C = \sqrt{{1 \mathord{\left/{\vphantom {1 {\left( {\sum\nolimits_{j = 1}^N {U_j^2} } \right)}}} \right. \kern-\nulldelimiterspace}{\left( {\sum\nolimits_{j = 1}^N {U_j^2} } \right)}}}$. Finally, we measure the analog-coded state $\left| \psi \right\rangle $.
 
-We use N grids during the calculation,
-since the number of N is relatively large,
-when sampling, we reduce the $N$ grids to $N_1$ grids, 
-and then sample the $O(N_1)$ times to get the classical information of the final output.
+We use N mesh cells during the calculation. Because the number $N$ is relatively large, we reduce the $N$ grids to $N_1$ grids when sampling, and then sample $\mathcal{O}(N_1)$ times to obtain the classical information of the final output.
 
-Assume that the $j$-th grid after dimension reduction contains $a_j$ original grid,
-a total of M times, the $j$-th grid appears $b_j$ times, then the output of the obtained $N_1$ grids can be expressed as: ${\vec u_{out}} = \left( {{{{b_j}} \mathord{\left/
-{\vphantom {{{b_j}} {{a_j}}}} \right. \kern-\nulldelimiterspace} {{a_j}}}} \right),j = 0,1, \cdots ,{N_1} - 1$.
+Assuming that the $j^{\text{th}}$ grid after dimension reduction contains $a_j$ original grids, a total of $M$ times and the $j^{\text{th}}$ grid appears $b_j$ times. Then, the output of the obtained $N_1$ grids may be expressed as ${\vec u_{out}} = \left( {{{{b_j}} \mathord{\left/ {\vphantom {{{b_j}} {{a_j}}}} \right. \kern-\nulldelimiterspace} {{a_j}}}} \right),j = 0,1, \cdots ,{N_1} - 1$.
 
-Finally we sample M times,
-because QDAC is a probabilistic operation,
-in other words, 
-there is a probability that $p = \sum\nolimits_{j = 1}^N {{{U_j^2} \mathord{\left/
-{\vphantom {{U_j^2} N}} \right. \kern-\nulldelimiterspace} N}} $ will successfully convert 
-the digital-encoded information into analog-coded information,
-thus we need $M/p$ times to extract information from QRAM and $M/p$ times QDAC.
-
-
-
+Finally, we sample $M$ times because QDAC is a probabilistic operation; in other words, there is a probability that $p = \sum\nolimits_{j = 1}^N {{{U_j^2} \mathord{\left/{\vphantom {{U_j^2} N}} \right. \kern-\nulldelimiterspace} N}} $ successfully converts the digital-encoded information into analog-coded information. Therefore, we need $M/p$ times to extract information from QRAM and $M/p$ times QDAC.
 \subsection{Overall Complexity Analysis}
 
-In this section, we analyze the complexity of the entire algorithm flow. The required qubit number of the whole process is 
+In this section, we analyze the complexity of the entire algorithm flow. The required number of qubits of the whole process is 
 \begin{equation}
-qnum=2(m+1)+log(j_0)+C_Aq_f
+qnum=2(m+1)+\log(j_0)+C_Aq_f
 \end{equation}
-As shown before, $O(j_0)=O(d\kappa log(d\kappa/\epsilon))$.
-In each iteration, two subprocesses might fail: QDAC operation in construction process of $O_b$ and linear combination of Chebyshev polynomials in construction process of $A^{-1}$. The success rates corresponding to these two subprocesses are written as:
+As shown previously, $\mathcal{O}(j_0)=\mathcal{O}(d\kappa\log(d\kappa/\epsilon))$. In each iteration, two subprocesses might fail: the QDAC operation in the construction process of $O_b$ and the linear combination of Chebyshev polynomials in the construction of $A^{-1}$. The success rates corresponding to these two subprocesses are
 \begin{equation}
 p_{QDAC}=\frac{1}{4N}\sum_i{(\Delta U_i/C_{max})^2}
 \end{equation}
+and
 \begin{equation}
-p_{A^{-1}}=\frac{1}{\alpha}
+p_{A^{-1}}=\frac{1}{\alpha}.
 \end{equation}
-Here $C_{max}>=max\{\Delta U_i\}$ and $O(\alpha)=O(\kappa log(\kappa d/\epsilon))$. $p_{QDAC}$ is a constant number, we can ignore it.
-Oracle $O_{adjacent}$ and $O_{coor}$ appear $O(1)$ times in quantum circuit of $O_l,O_b,O_A$, $O_l$,$O_A$ appear $O(j_0)$ times in each iteration. So the query complexity of $O_{adjacent}$ and $O_{coor}$ is $O(\alpha IterTimes\times j_0)$.
+Here $C_{max}>=max\{\Delta U_i\}$ and $\mathcal{O}(\alpha)=\mathcal{O}(\kappa\log(\kappa d/\epsilon))$. $p_{QDAC}$ is a constant number and hence can be ignored. Oracles $O_{adjacent}$ and $O_{coor}$ appear $\mathcal{O}(1)$ times in the quantum circuit of $O_l,O_b,O_A$, and $O_l$,$O_A$ appears $\mathcal{O}(j_0)$ times in each iteration. Hence, the query complexity for both $O_{adjacent}$ and $O_{coor}$ is $\mathcal{O}(\alpha IterTimes\times j_0)$.
 
-QRAM $M_U$ also appears $O(1)$ times to construct $O_b$ and $O_A$, the query complexity of $M_U$ is $O(\alpha IterTimes\times j_0)$. In each iteration, we update $M_U$, the update complexity of $M_U$ is $O(IterTimes)$.
+QRAM $M_U$ also appears $\mathcal{O}(1)$ times in constructing $O_b$ and $O_A$, the query complexity of $M_U$ being $\mathcal{O}(\alpha IterTimes\times j_0)$. In each iteration, we update $M_U$, the update complexity of $M_U$ being $\mathcal{O}(IterTimes)$.
 
-The gate complexity of the whole process is $O(\alpha j_0poly(log(4N))/\epsilon)$.
-
-
-
+The gate complexity of the whole process is $\mathcal{O}(\alpha j_0poly(\log(4N))/\epsilon)$.
 
 
 \subsection{Normalization explanation}
-As expected, linear systems like $\mathcal{A} \bm{\Delta U} = \bm{b}$ ($N$ variables) could be solved by quantum algorithms. But outputs are corresponding states instead of the actual root vectors. Different from vector $\bm{\Delta U}$, quantum state $\left| \Delta U\right\rangle$ has been normalized: 
+As expected, linear systems like $\mathcal{A} \bm{\Delta U} = \bm{b}$ ($N$ variables) can be solved by quantum algorithms. However, the outputs are associated states instead of the actual root vectors. Different from vector $\bm{\Delta U}$, the quantum state $\left| \Delta U\right\rangle$ has been normalized,
 \begin{align}
-	\left| \Delta U\right\rangle = \frac{A^{-1} \left|b\right\rangle}{\left\|A^{-1} \left|b\right\rangle\right\|} = c A^{-1} \left|b\right\rangle = c \sum_{i=1}^{N} \Delta u_i\left|i\right\rangle
+\left|\Delta U\right\rangle=\frac{A^{-1}\left|b\right\rangle}{\left\|A^{-1}\left|b\right\rangle\right\|}
+= c A^{-1} \left|b\right\rangle = c \sum_{i=1}^{N} \Delta u_i\left|i\right\rangle.
 \end{align}
 
-For different $A$ and $\left|b\right\rangle$, we have different normalization constants, i.e., $c^{n} \neq c^{n+1}$, usually. As described above, $U^{n+1}$ equals $U^{n} + \Delta U^{n} = U^{1} + \sum_{i=1}^{n} \Delta U^{i}$, which means performing operations like $\Delta U^{i} + \Delta U^{j}$ is necessary, yet there would be some trouble with accomplishing them by adding $\left|\Delta U^{i}\right\rangle$ to $\left|\Delta U^{j}\right\rangle$.
+For different $A$ and $\left|b\right\rangle$, we have different normalization constants; that is, usually $c^{n} \neq c^{n+1}$. As described above, $U^{n+1}$ equals $U^{n} + \Delta U^{n} = U^{1} + \sum_{i=1}^{n} \Delta U^{i}$, which means performing operations like $\Delta U^{i} + \Delta U^{j}$ is necessary. Nevertheless, there would be some trouble with accomplishing them by adding $\left|\Delta U^{i}\right\rangle$ to $\left|\Delta U^{j}\right\rangle$.
 
-Consider there is a constant $L$ large enough, and construct a new state $\left|\Delta U^{\prime}\right\rangle$: 
+Suppose there is a sufficiently large constant $L$; we construct a new state $\left|\Delta U^{\prime}\right\rangle$,
 \begin{align}
-	\left|\Delta U^{\prime}\right\rangle = \sum_{i=1}^{N+1}\Delta  u_i^{\prime}\left|i\right\rangle
+\left|\Delta U^{\prime}\right\rangle = \sum_{i=1}^{N+1}\Delta u_i^{\prime}\left|i\right\rangle
 \end{align}
 where
 \begin{equation}
-	\left\{
-	\begin{array}{ll}
-		\Delta u_i^{\prime} = \frac{\Delta u_i}{L}&,\ 1\leq i \leq N\\
-		&\\
-		\Delta u_i^{\prime} = \sqrt{1 - \sum_{j=1}^{N}{\Delta u_j^{\prime}}^2}&,\ i=N+1
-	\end{array}
-	\right.
+\left\{
+\begin{array}{ll}
+  \Delta u_i^{\prime} = \frac{\Delta u_i}{L}&,\ 1\leq i \leq N\\
+  &\\
+  \Delta u_i^{\prime} = \sqrt{1 - \sum_{j=1}^{N}{\Delta u_j^{\prime}}^2}&,\ i=N+1
+\end{array}
+\right.
 \end{equation}
 
-Then we got a new set of equations:
+We then derive a new set of equations,
 \begin{equation}\label{eq:Delta_u_prime_equations}
-	\left\{
-	\begin{array}{l}
-		\sum_{j=1}^{N}A_{ij}\Delta u_j^{\prime} = \frac{b_i}{L} \ s.t. \ 1\leq i \leq N\\
-		\\
-		\sum_{i=1}^{N + 1}{\Delta u_i^{\prime}}^2 = 1
-	\end{array}
-	\right.
+\left\{
+\begin{array}{l}
+  \sum_{j=1}^{N}A_{ij}\Delta u_j^{\prime} = \frac{b_i}{L} \ s.t. \ 1\leq i \leq N\\
+  \\
+  \sum_{i=1}^{N + 1}{\Delta u_i^{\prime}}^2 = 1
+\end{array}
+\right.
 \end{equation}
 
-To linearize Formula.\ref{eq:Delta_u_prime_equations}.2, we could replace ${\Delta u^{\prime n}_i}^2$ with $\Delta u^{\prime n - 1}_i \Delta u^{\prime n}_i$ while $\Delta t$ is small enough. And we gained new linear systems $\mathcal{A^{\prime}} \bm{\Delta U^{\prime}} = \bm{b^{\prime}}$: 
+To linearize equation~\ref{eq:Delta_u_prime_equations}.2, we replace ${\Delta u^{\prime n}_i}^2$ with $\Delta u^{\prime n - 1}_i \Delta u^{\prime n}_i$ while $\Delta t$ is small enough. We now have a new linear system $\mathcal{A^{\prime}} \bm{\Delta U^{\prime}} = \bm{b^{\prime}}$,
 \begin{equation}
 \begin{array}{cc}
-	\mathcal{A^{\prime}} = \left[
-	\begin{array}{cc}
-		&\\
-		\mathcal{A} & \bm{0}\\
-		&\\
-		\Delta u^{\prime n - 1}_1...\Delta u^{\prime n - 1}_N&\Delta u^{\prime n - 1}_{N+1}
-	\end{array}
-	\right]
-	&
-	\bm{b^{\prime}} = \left[
-	\begin{array}{c}
-		\frac{b_1}{L}\\
-		...\\
-		\frac{b_N}{L}\\
-		1
-	\end{array}
-	\right]
-	
+\mathcal{A^{\prime}} = \left[
+\begin{array}{cc}
+  &\\
+  \mathcal{A} & \bm{0}\\
+  &\\
+  \Delta u^{\prime n - 1}_1...\Delta u^{\prime n - 1}_N&\Delta u^{\prime n - 1}_{N+1}
+\end{array}
+\right]
+&
+\bm{b^{\prime}} = \left[
+\begin{array}{c}
+  \frac{b_1}{L}\\
+  \vdots\\
+  \frac{b_N}{L}\\
+  1
+\end{array}
+\right]
 \end{array}
 \end{equation}
-For state $\left|\Delta U^{\prime}\right\rangle$, the normalization constant is $1$ for ever. Then we could accomplish the math operations freely (using the first $N$ components of $\left|\Delta U^{\prime}\right\rangle$). While $N$ is large enough, $\mathcal{A^{\prime}}$ is also a sparse matrix. We could construct it efficiently.
+For state $\left|\Delta U^{\prime}\right\rangle$, the normalization constant is always $1$. Then, we can accomplish the mathematical operations freely (using the first $N$ components of $\left|\Delta U^{\prime}\right\rangle$). For $N$ sufficiently large, $\mathcal{A^{\prime}}$ is also a sparse matrix and therefore we can construct it efficiently.
+
 
 \iffalse
 Observing the Jacobi Matrix, we could found that except for boundaries, each variable appeared at least $3$ times in $\mathcal{A}$. Let $S_{var}$ be the set of orders of rows where variable $var$ appeared. As mentioned above, there are at most d nonzero entries in any row or column in $\mathcal{A}$, i.e., $\left\|S_{var}\right\|\leq d$. If there exists $var_i$ and $var_j\neq var_i$ such that $S_{var_j}\subset S_{var_i}$, we could use rows of which orders were in $S_{var_i}$ to eliminate the $i-th$ and $j-th$ entries of the last row of $\mathcal{A^{\prime}}$. 
@@ -727,27 +703,28 @@ If not, $var_i$ and $var_j$ are not independent in eqautions of which orders are
 
 Because of $\left\|S_{var}\right\|\leq d$, we could construct a method to eliminate the entries of last row of $\mathcal{A^{\prime}}$: 1. $i=1$; 2. Using the corresponding $\left\|S_{var_i}\right\|$ to eliminate the $i-th$ entry; 3. $i=i+1$ until the $i-th$ entry hasn't been eliminated; 4. Back to step 2. 
 
-Then we could eliminate at least $N/d$ entries of the last row of $\mathcal{A^{\prime}}$. Continue using equations without the $N/d$ variables to eliminate other entries. Finally, the number of nonzero entries in the last row would turn to $O(\sqrt{N})$, while $N$ is large enough.
+Then we could eliminate at least $N/d$ entries of the last row of $\mathcal{A^{\prime}}$. Continue using equations without the $N/d$ variables to eliminate other entries. Finally, the number of nonzero entries in the last row would turn to $\mathcal{O}(\sqrt{N})$, while $N$ is large enough.
 \fi
 
 
 \section{Conclusion}
 
-In this paper, we are answering the problem set 2: The Computational Fluid Dynamics. Our task is to replace some certain modules in the SU2 CFD Solver with quantum modules, forming a quantum-classical hybrid approach. The original classical solver uses Finite Volume Method, along with the iteration on time integration to obtain the result of the fluid equations. By multigrid method, the classical has the $O(n)$ complexity between each iteration steps, where n denotes the number of mesh grids. Therefore, quantum solver must have sublinear time complexity to observe the quantum speed-up.
+In this paper, we solved Problem Set 2: The Computational Fluid Dynamics. Our task was to replace some certain modules in the SU2 CFD Solver with quantum modules that formed the basis of our quantum--classical hybrid approach. The original classical solver uses the FVM, along with iterating the time integration to obtain solutions of the fluid equations. By the multigrid method, the classical solver has an $\mathcal{O}(n)$ complexity between each iteration step; here $n$ denotes the number of mesh cells. Therefore, the quantum solver must have sublinear time complexity to observe quantum speedup.
 
-We here use the quantum linear solver to accelerate the solution of the linear equations. In order to prepare all the data needed by the quantum linear solver, we choose to replace the core procedures in the CFluidIteration process. One is the MultiGrid\_Cycle, including the preprocessing and the equation solving, fully replaced by a quantum process. Another is the Preprocessing part, which links the data between two iteration steps, also replaced by a quantum process. Naturally, classical data is replaced by quantum data. The input mesh info should be made as a QRAM, which is frequently used in preprocessor. Most of the internal data during the calculation are no longer needed, because they are saved in quantum registers. The configuration data of the whole problem are considered as constants, which are used to generate the quantum program directly.
+We here use the quantum linear solver to accelerate the solution of the linear equations. To prepare all the data needed by the quantum linear solver, we chose to replace the core procedures in the CFluidIteration process. One is the MultiGrid\_Cycle, including preprocessing and equation solving, that was fully replaced by a quantum process. Another is Preprocessing, which links the data between two iteration steps, and was also replaced by a quantum process. Naturally, classical data were replaced by quantum data. The input mesh information should be put into QRAM, which is frequently used in the preprocessor. Most of the internal data during the calculation were no longer needed, because they are saved in quantum registers. The configuration data of the whole problem are considered as constants, which are used to generate the quantum program directly.
 
-We finally obtain the time complexity of $O(\log N)$ with N the mesh number, exponential faster than the classical counterpart. The requirement of the qubit number, with ancillary qubit taken into consideration, is also $O(\log N)$ in our algorithm.
+We finally obtained a time complexity of $\mathcal{O}(\log N)$, $N$ the mesh number, and is exponentially faster than its classical counterpart. Our algorithm requires for $\mathcal{O}(\log N)$ qubits, with ancillary qubits taken into consideration.
 
-We declare our plan have three advantages. First, without changing the problem model, we realize exponential quantum speedup in this problem. Second, we fully discover the program of the SU2, properly finding the replacement that we have to do, implementing our algorithm with QPanda quantum programming framework and obtaining numerical results. These work infers that it is possible to realize our full plan in the future. Third, we do not ignore the quantum-classical data conversion interface problem, which we thought would be a blind point of many other plans, because What we are solve is a realistic problem. Our assumptions on the conversion between the quantum and the classical data are all have some base works. Besides, we made a proof on this problem, by showing the necessity of the QRAM and other assumputions, without which quantum speedup would never be achieved.
+We believe our plan has three advantages. First, without changing the problem model, we realized exponential quantum speedup for this problem. Second, we fully revealed the SU2 program, finding the replacement that we have to do properly, then implementing our algorithm with the QPanda quantum programming framework, and finally obtaining numerical results. This work suggests that it is possible to realize our full plan in the future. Third, we do not ignore the quantum--classical interface problem for data conversion; we thought this would be a blind spot for many other plans because what we solved is a realistic problem. Our assumptions concerning the conversion between quantum and classical data were that all have some basic functions. Moreover, we produced a proof regarding this problem showing the need for a QRAM and other assumptions, without which quantum speedup would never be achieved.
 
-There are also drawbacks of our plan. First, the complexity of the quantum program, although growing with logarithm on the mesh number, is greatly exceeding any limit of the near-term quantum devices. That is, fault-tolerant quantum computing scheme must be realized to solve this problem. Second, our plan did not discuss the realizability of the QRAM, which we thought is not our task.
+There are nonetheless drawbacks of our plan. First, the quantum program is complex. Although growing logarithmically with mesh number, the complexity greatly exceeds any limit of the quantum devices in the near term. That is, fault-tolerant quantum computing schemes must be realized to solve this problem. Second, our plan did not discuss the realizability of the QRAM, which we believe is not our task.
 
-In conclusion, the computational fluid dynamics problem is possible to achieve speed-up with a fault tolerant quantum computer using our plan. We replace several modules in SU2 to adapt the quantum computer and classical computer, finally obtaining the complexity of both time and qubit resource with $O(\log N)$. We hope our work would be a guide to the future research of the application of quantum computing on the realistic problems.
+In conclusion, using our approach, the CFD problem is posed to achieve speedup with fault-tolerant quantum computers. We replaced several modules in SU2 to adapt the quantum computer and classical computer, and obtained in the end a complexity for both time and qubit resources of $\mathcal{O}(\log N)$. Our work should provide a guide to future research on the application of quantum computing in realistic problems.
 
+\clearpage
 
 \section{Supplementary information}
- \subsection{quantum circuit modules}
+\subsection{quantum circuit modules}
 In this section, we introduce the quantum circuit modules used in our algorithm quantum circuit construction.
 
 
@@ -773,7 +750,7 @@ Secondly, we give the circuit diagram of the algorithm.
 The $n$ indicates the number of qubits required to encode data. The $m$ represents the number of digits of the desired precision. In the end, we only need to compute the upper bit. The function of ${U_D}$-gate is as follows:
 \[{U_D}\left( {\left\{ {{d_j}} \right\}} \right)\left| j \right\rangle \left| 0 \right\rangle  = \left| j \right\rangle \left| {{d_j}} \right\rangle \]
 
-The ${U_{AC}}$-gate means arccos function. The control-${R_y}$ gate represents the bit-by-bit control of rotation. If we don't consider $n$ H-gates, $O(m)$ gates are needed altogether \cite{mitarai_quantum_2019}.
+The ${U_{AC}}$-gate means arccos function. The control-${R_y}$ gate represents the bit-by-bit control of rotation. If we don't consider $n$ H-gates, $\mathcal{O}(m)$ gates are needed altogether \cite{mitarai_quantum_2019}.
 
 Thirdly, the normalization. Finally, the coefficients are needed to normalize. After calculation, the normalization coefficient $C$ is $\sqrt {1/\left( {\sum\nolimits_{j = 1}^N {d_j^2} } \right)} $ \cite{mitarai_quantum_2019}.
 
@@ -783,9 +760,9 @@ Thirdly, the normalization. Finally, the coefficients are needed to normalize. A
 Mitarai, Kitagawa, and Fujii \cite{mitarai_quantum_2019} gave a deterministic algorithm for a quantum analog-to-digital conversion(QADC).
 The algorithm includes absolute-QADC, real-QADC and imaginary-QADC.
 The main idea of these algorithms involves Hadamard test and phase estimation. The real-QADC is mainly used here. An $m$-bit real-QADC operation is defined by 
-$$
+\begin{equation}
 {O_{rAD}}{\rm{:}}\sum\nolimits_{k = 1}^N {{c_k}\left| k \right\rangle {{\left| 0 \right\rangle }^{ \otimes m}}}  \to \frac{1}{{\sqrt N }}\sum\nolimits_{k = 1}^N {\left| k \right\rangle \left| {{{\tilde{\textbf x} }_k}} \right\rangle } ,
-$$
+\end{equation}
 where ${\tilde {\textbf x}_k}$ indicates the $m$-bit string $\tilde x_k^{\left( 1 \right)} \cdots \tilde x_k^{\left( m \right)}$ that best approximates the real part ${c_k}$ by $\sum\nolimits_{l = 1}^m {\tilde x_k^{\left( l \right)}{2^{ - l}}} $.
 
 The quantum circuit of the real-QADC algorithms is given as shown in FIG.\ref{QADC_fig}(a).
@@ -802,11 +779,15 @@ The quantum circuit of the real-QADC algorithms is given as shown in FIG.\ref{QA
 
 $m$ and $n$ represent the number of digits of the desired precision and the number of qubits required to encode data, respectively.
 And an analog-encoding unitary transformation $U_A(\{c_j\})$ is defined by
-$${U_A}\left( {\left\{ {{c_j}} \right\}} \right)\left| 0 \right\rangle  = \sum\nolimits_j {{c_j}\left| j \right\rangle },$$
+\begin{equation}
+U_A\left( {\left\{ {{c_j}} \right\}} \right)\left| 0 \right\rangle  = \sum\nolimits_j {{c_j}\left| j \right\rangle },
+\end{equation}
 where $\left\{ {{c_j}} \right\}_{j = 1}^N$ is classical data and normalized to satisfy $\sum\nolimits_{j = 1}^N {{{\left| {{c_j}} \right|}^2}}  = 1$.
 
 Gate G is given by
-$$G = W{S_0}{W^\dag }{Z_B},$$
+\begin{equation}
+G = W{S_0}{W^\dag }{Z_B},
+\end{equation}
 where $W$ is the gate shown in FIG.\ref{QADC_fig}(c), ${S_0} = I - 2{\left( {\left| 0 \right\rangle \left\langle 0 \right|} \right)_{data,B}}$
 is a conditional phase-shaft gate and ${Z_B}$ is a Pauli-$Z$ gate only acting on qubit $B$.
 
@@ -840,7 +821,7 @@ $V|0^m\rangle:=\frac{1}{\sqrt{\alpha}}\Sigma_i\sqrt{\alpha_i}|i\rangle$
 $(|0^r\rangle\langle0^r|\otimes\mathbbm{1})|\Xi_i^\bot\rangle=0$.
 
 In our problem, we need the inverse matrix function $f(x) = 1/x$, 
-it suffice that $O(\lVert A^{-1}-F\rVert)=\epsilon$.
+it suffice that $\mathcal{O}(\lVert A^{-1}-F\rVert)=\epsilon$.
 The linear combination\cite{doi:10.1137/16M1087072} is
 \begin{equation}
 g(x):=4\sum_{j=0}^{j_0}(-1)^j
@@ -887,7 +868,7 @@ We use two oracles to extract information of matrix $A$: $O_l$ and $O_A$, which 
 
 
 Our first goal is to encode the state $\frac{1}
-{\sqrt{\alpha}}\sum_i^{j_0}\sqrt{\alpha_i}|i\rangle$, it can be prepared with a $O(j_0)$-length quantum circuit.
+{\sqrt{\alpha}}\sum_i^{j_0}\sqrt{\alpha_i}|i\rangle$, it can be prepared with a $\mathcal{O}(j_0)$-length quantum circuit.
 
 Then we construct operator $T$, as shown in \cite{7354428}, the operator $T$ can be synthesised as following.
 The whole circuit need $log_2(2N)$ qubits for vector $|j\rangle$, likewise 
