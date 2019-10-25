@@ -133,7 +133,7 @@ Computational Fluid Dynamics (CFD) problems are often related to solving a serie
 
 Here we introduce our algorithm. The modules that we replace are data structures used and methods called in the class CFluidIteration. In the data structure, these are replaced by quantum memory or quantum states: including the information about the mesh grid and all vectors that are involved in the linear equations. In the process of the time integration, the linear solver is replaced by a quantum version. And in other pro- and post-processing parts, they are completely replaced by quantum arithmetic modules to form the oracle necessary in the quantum linear solver. Besides, we do not change the problem model, the mesh setting and the FVM method, including the iteration process of the time integration. 
 
-As the result, the time complexity of our algorithm is proportional to $\log⁡ N$, where N denotes the mesh number. The qubit number is also proportional to $\log⁡ N$. Besides the effect of the mesh number, both the complexity and the qubit number are affected by the precision $\epsilon$. We also dicussed the conditional number and the sparsity. They affect the time complexity, however, they are considered as a constant in the problem because they will not change greatly.
+As the result, the time complexity of our algorithm is proportional to $\log N$, where N denotes the mesh number. The qubit number is also proportional to $\log N$. Besides the effect of the mesh number, both the complexity and the qubit number are affected by the precision $\epsilon$. We also dicussed the conditional number and the sparsity. They affect the time complexity, however, they are considered as a constant in the problem because they will not change greatly.
 
 Along with the algorithm detail, we also discuss the difficulties of the problem. One is that we prove that it is necessary to include the quantum random access memory (QRAM), without which quantum speed up will not be achieved. Another is that the qubit should be fault-tolerant logical qubit, because the requirements of the gate number and the state storage time greatly exceed any limit of the near-future NISQ device.
 
@@ -180,7 +180,7 @@ $$
 \vec{U}^i=\vec{U}^{i-1}+\Delta \vec{U}^i.
 $$
 
-We here use the quantum linear solver as the accelerator of the calculation. The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The algorithm solves the linear equation $Ax = b$, which requires $O((d log⁡N)/\epsilon)$ oracle query and has the successful rate with $O(1/\kappa)$ where N represents the dimension of the equation, $d$ the sparsity of the matrix, $\epsilon$ the target precision, and $\kappa$ the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works. His works are based on linear combination of operators, which improves on the complexity dependencies on the precision.
+We here use the quantum linear solver as the accelerator of the calculation. The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The algorithm solves the linear equation $Ax = b$, which requires $O(d\log N/\epsilon)$ oracle query and has the successful rate with $O(1/\kappa)$ where N represents the dimension of the equation, $d$ the sparsity of the matrix, $\epsilon$ the target precision, and $\kappa$ the conditional number of the matrix A. The quantum solver is then improved by Andrew Childs’s works. His works are based on linear combination of operators, which improves on the complexity dependencies on the precision.
 
 \subsubsection{Overall Complexity}
 QRAM is necessary in model to demonstrate quantum speed up. We use QRAM in three procedures. First is to store the information about the mesh grid. Second is to store the interval results of the solver. Third is to help recover from the probabilistic error of performing a non-unitary transformation. Here we list the qubit,query and gate complexity of the whole process of our algorithm: the required qubit number is
@@ -278,7 +278,7 @@ In this section, we use the following symbols:
 \item IterTimes: Iteration times
 \item $|\vec{U}\rangle$: represents $\vec{U}=(\rho,\rho u, \rho\nu, \rho E)$, which dimension is $4N$
 \item $\vec{u}_i$: variables on the mesh $i$ 
-\end{enumerate}
+\end{itemize}
 \subsection{FVM method}\label{classicalFVM}
 
 An important applicaiton of modern Computational Fluid Dynamics (CFD) is to simulate systems in aircraft aerodynamic design. The usual classical algorithm often means high complexity, which forces us in seeking for more effective computations, e.g., a quantum-hybrid solution.
@@ -512,84 +512,22 @@ And we realize $O_A$, the corresponding quantum circuit is shown in fig.~\ref{OA
 In this process,the number of times $M_U$, $O_{adjacent}$ and $O_{coor}$ are used is $O(1)$. The required qubit number is $2m+C_Aq_f$, $C_Aq_f$ is a ancilla qubit sequence used to compute $A_{ij}$. The gate complexity is $O(poly(m))$. $A_{ij}$'s expression is more complicated than $b_i$, so $C_A>=C_b$, the qubit number used in $O_l,O_b,O_A$ is $2m+C_Aq_f$.
 
 \subsection{Necessity of QRAM}
-\subparagraph{Theorem I} Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
-linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle$.
 
-\subparagraph{Pf:} 1.Necessity: Let $\left|\phi_i\right\rangle = \sum_{j=1}^n \left|x_{ij}\right\rangle$. If there exists linear transformation $A$ s.t.
-\begin{align*}
-A\left|\phi_i\right\rangle = \sum_{i=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
-\end{align}
-then
-\begin{align}
-A\sum_{i=1}^{n}\left|\phi_i\right\rangle = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
-\end{align*}
-Rearrange the terms. We have: 
-\begin{align}
-LHS = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)\right\rangle = RHS
-\end{align*}
-Therefore，for all $\left(i, j\right) \in \left[1, n\right]\times\left[1, n\right]$, 
-\begin{align}
-f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)
-\end{align*}
-1)While $i=j$, $f_{i}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1i}, x_{2i}, ..., x_{ni}\right)$, i.e., 
-\begin{align}
-f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
-\end{align*}
-2)While $i\neq j$, $f_j\left(x_{ij}\right) = f_i\left(x_{ij}\right)$, i.e., 
-\begin{align}
-f_i\left(u\right) = f\left(u\right)
-\end{align*}
-Above all, 
-\begin{align}
-A\sum_{i=1}^{n}\left|u_i\right\rangle = \sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle
-\end{align}
+QRAM is a quantum analogue to the classical Random Access Memory (RAM). QRAM enables the user obtaining the data in the QRAM efficiently while the address is given in the superposition state. 
+\begin{equation}
+QRAM: \sum_i{|i\rangle|0\rangle}=\sum_i{|i\rangle|U_i\rangle}
+\end{equation}
+The $U_i$ denotes the classical data encoded in the quantum states.
 
-2.Sufficiency: Obvious.
+There were several QRAM models proposed in the previous works. A typical one is to implement the QRAM by a set of optical devices, requiring O(log N) operations (N denotes the memory length). Another more straightforward approach is to realize it with the decomposition of the quantum circuits. However, although the addressing part is realized in O(log N), the state generation part involves O(N) multi-controlled NOT gates, which should not be considered as an efficient plan.
 
-\subparagraph{Theorem II} Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
-linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle$.
+We will introduce an efficiently QRAM only requiring O(log N) operations in our plan. We have to mention that the QRAM is never fabricated in real, which will be one of the drawbacks.
 
-\subparagraph{Pf:} 1.Necessity: Let $S_n$ be the set of all cycle notations of permutation $\left(1, 2, ..., n\right)$. If there exists linear transformation $A$ s.t. 
-\begin{align*}
-	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_1, u_2, ..., u_n\right)\right\rangle
-\end{align}
-then, for all $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
-\begin{align}
-	A\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
-\end{align*}
-Therefore,  
-\begin{align}
-	&A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle \notag\\
-	&=\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
-\end{align*}
-And
-\begin{align}
-	LHS &= A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|j_i\right\rangle\left|u_i\right\rangle\notag\\
-	&= A\sum_{i=1}^n\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\left|j_i\right\rangle\left|u_i\right\rangle\notag\\
-	&= A\sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle \notag\\
-	&= \sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle\left|f_{k}\left(u_i, u_i, ..., u_i\right)\right\rangle\notag\\
-	&= \sum_{k=1}^n\sum_{i=1}^n\left|i\right\rangle\left|u_k\right\rangle\left|f_{i}\left(u_k, u_k, ..., u_k\right)\right\rangle\notag \\
-	&= \sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)\right\rangle\notag\\
-	&= RHS
-\end{align*}
-Corresponding items must be equal to each other, that is, for all $i \in \left[1, n\right]$ and $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
-\begin{align}
-	f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right) = f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)
-\end{align}
-i.e.，for any $i\neq j$
-\begin{align}
-	\frac{\partial f_i\left(u_1, u_2, ..., u_n\right)}{\partial u_j} = 0
-\end{align}
-in other, 
-\begin{align}
-	f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
-\end{align*}
-Hence $A$ should meet the condition: 
-\begin{align}
-	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle
-\end{align}
+\subparagraph{Overall Complexity without QRAM} The classical problem has linear complexity, which greatly constrains the design of the quantum methods, especially quantum-classical hybrid methods. 
 
-2.Sufficiency: Obvious.
+It is already known that, if someone wants to fully convert components in quantum states to a classical memory, it uses at least $O(n)$ times. The pure classical solver uses time integration, an iteration process being necessary. If the result is stored in the quantum states with any quantum solver, and we expect data transferred between each step of the iteration are classical, the “quantum-classical converter” process is inevitable and $O(n)$ time is consumed, and no acceleration exists (second case in the table.~\ref{tab2}).
+
+For the fourth case of the table.~\ref{tab2}, we declare it impossible to implement such a plan in real. The problem is the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As we have mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we will prove formally that this process cannot be implemented by a linear operator, which is considered as fundamental for the quantum mechanics. The proof is written in the Supplementary Information.
 
 \subsection{Quantum Linear Solver}
 
@@ -612,12 +550,11 @@ following
 \label{o}
 \end{figure}
 
-In fig.~\ref{o}, $t=O(log(j_0))$ is the qubits for control bits  $\frac{1}
+In Fig.~\ref{o}, $t=O(log(j_0))$ is the qubits for control bits $\frac{1}
 {\sqrt{\alpha}}\sum_i\sqrt{\alpha_i}|i\rangle$. The total qubits number is 
 \begin{equation}
 2(m+1)+t+C_Aq_f
 \end{equation}
-
 
 \subsubsection{Complexity and Successful probability}
 In \cite{doi:10.1137/16M1087072}, function $1/x$ can be $\epsilon$ approximated by
@@ -793,24 +730,6 @@ Then we could eliminate at least $N/d$ entries of the last row of $\mathcal{A^{\
 \fi
 
 
-\subsection{Relation to QRAM: The Main Difficulties of the Problem}
-
-QRAM is a quantum analogue to the classical Random Access Memory (RAM). QRAM enables the user obtaining the data in the QRAM efficiently while the address is given in the superposition state. 
-\begin{equation}
-QRAM: \sum_i{|i\rangle|0\rangle}=\sum_i{|i\rangle|U_i\rangle}
-\end{equation}
-The $U_i$ denotes the classical data encoded in the quantum states.
-
-There were several QRAM models proposed in the previous works. A typical one is to implement the QRAM by a set of optical devices, requiring O(log N) operations (N denotes the memory length). Another more straightforward approach is to realize it with the decomposition of the quantum circuits. However, although the addressing part is realized in O(log N), the state generation part involves O(N) multi-controlled NOT gates, which should not be considered as an efficient plan.
-
-We will introduce an efficiently QRAM only requiring O(log N) operations in our plan. We have to mention that the QRAM is never fabricated in real, which will be one of the drawbacks.
-
-\subparagraph{Overall Complexity without QRAM} The classical problem has linear complexity, which greatly constrains the design of the quantum methods, especially quantum-classical hybrid methods. 
-
-It is already known that, if someone wants to fully convert components in quantum states to a classical memory, it uses at least $O(n)$ times. The pure classical solver uses time integration, an iteration process being necessary. If the result is stored in the quantum states with any quantum solver, and we expect data transferred between each step of the iteration are classical, the “quantum-classical converter” process is inevitable and $O(n)$ time is consumed, and no acceleration exists (second case in the table.~\ref{tab2}).
-
-For the fourth case of the table.~\ref{tab2}, we declare it impossible to implement such a plan in real. The problem is the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As we have mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we will prove formally that this process cannot be implemented by a linear operator, which is considered as fundamental for the quantum mechanics. The proof is written in the Supplementary Information.
-
 \section{Conclusion}
 
 In this paper, we are answering the problem set 2: The Computational Fluid Dynamics. Our task is to replace some certain modules in the SU2 CFD Solver with quantum modules, forming a quantum-classical hybrid approach. The original classical solver uses Finite Volume Method, along with the iteration on time integration to obtain the result of the fluid equations. By multigrid method, the classical has the $O(n)$ complexity between each iteration steps, where n denotes the number of mesh grids. Therefore, quantum solver must have sublinear time complexity to observe the quantum speed-up.
@@ -826,234 +745,311 @@ There are also drawbacks of our plan. First, the complexity of the quantum progr
 In conclusion, the computational fluid dynamics problem is possible to achieve speed-up with a fault tolerant quantum computer using our plan. We replace several modules in SU2 to adapt the quantum computer and classical computer, finally obtaining the complexity of both time and qubit resource with $O(\log N)$. We hope our work would be a guide to the future research of the application of quantum computing on the realistic problems.
 
 
-% \section{Supplementary information}
-% \subsection{quantum circuit modules}
-% In this section, we introduce the quantum circuit modules used in our algorithm quantum circuit construction.
+\section{Supplementary information}
+ \subsection{quantum circuit modules}
+In this section, we introduce the quantum circuit modules used in our algorithm quantum circuit construction.
 
 
-% \subsection{QDAC and QADC}
-% Mitarai, Kitagawa, and Fujii \cite{mitarai_quantum_2019} gave a deterministic algorithm for quantum digital-to-analog conversion(QDAC) and quantum analog-to-digital conversion(QADC). We first introduce these two quantum circuit modules.
-% \paragraph{QDAC}
+\subsection{QDAC and QADC}
+Mitarai, Kitagawa, and Fujii \cite{mitarai_quantum_2019} gave a deterministic algorithm for quantum digital-to-analog conversion(QDAC) and quantum analog-to-digital conversion(QADC). We first introduce these two quantum circuit modules.
+\paragraph{QDAC}
 
-% The purpose of QDAC is to change a quantum state encoded by numbers between $0$ and $1$ into the amplitude before the quantum state. So the QADC operation is defined by
-% \[\frac{1}{{\sqrt N }}\sum\limits_{j = 1}^N {\left| j \right\rangle \left| {{d_j}} \right\rangle  \to C\sum\limits_{j = 1}^N {{d_j}{{\left| 0 \right\rangle }^{ \otimes m}}} }. \]
+The purpose of QDAC is to change a quantum state encoded by numbers between $0$ and $1$ into the amplitude before the quantum state. So the QADC operation is defined by
+\[\frac{1}{{\sqrt N }}\sum\limits_{j = 1}^N {\left| j \right\rangle \left| {{d_j}} \right\rangle  \to C\sum\limits_{j = 1}^N {{d_j}{{\left| 0 \right\rangle }^{ \otimes m}}} }. \]
 
-% The main idea of the QDAC algorithm is to turn the coefficients in front of each ground state through a rotation of auxiliary bits. Now we want to explain only the following three questions.
+The main idea of the QDAC algorithm is to turn the coefficients in front of each ground state through a rotation of auxiliary bits. Now we want to explain only the following three questions.
 
-% Firstly, the probability of success. The QDAC algorithm has only a certain probability of success and a certain probability of failure in operation. If it fails, run the algorithm from scratch. After calculation, the probability of one-time success is $\sum\nolimits_{j = 1}^N {d_j^2/N} $\cite{mitarai_quantum_2019}.
+Firstly, the probability of success. The QDAC algorithm has only a certain probability of success and a certain probability of failure in operation. If it fails, run the algorithm from scratch. After calculation, the probability of one-time success is $\sum\nolimits_{j = 1}^N {d_j^2/N} $\cite{mitarai_quantum_2019}.
 
-% Secondly, we give the circuit diagram of the algorithm.
+Secondly, we give the circuit diagram of the algorithm.
 
-% \begin{figure}[htbp]
-%  \subfigure{\includegraphics[width=0.48\textwidth]{Fig/qdac.png}}
-%   \caption{The quantum circuit of the QDAC algorithms.(In measurement, if it is $\left| 0 \right\rangle $, continue; if it is $\left| 1 \right\rangle $, start from scratch.)}
-%  \label{QDAC_qcir}
-% \end{figure}
+\begin{figure}[htbp]
+ \subfigure{\includegraphics[width=0.48\textwidth]{Fig/qdac.png}}
+  \caption{The quantum circuit of the QDAC algorithms.(In measurement, if it is $\left| 0 \right\rangle $, continue; if it is $\left| 1 \right\rangle $, start from scratch.)}
+ \label{QDAC_qcir}
+\end{figure}
 
-% The $n$ indicates the number of qubits required to encode data. The $m$ represents the number of digits of the desired precision. In the end, we only need to compute the upper bit. The function of ${U_D}$-gate is as follows:
-% \[{U_D}\left( {\left\{ {{d_j}} \right\}} \right)\left| j \right\rangle \left| 0 \right\rangle  = \left| j \right\rangle \left| {{d_j}} \right\rangle \]
+The $n$ indicates the number of qubits required to encode data. The $m$ represents the number of digits of the desired precision. In the end, we only need to compute the upper bit. The function of ${U_D}$-gate is as follows:
+\[{U_D}\left( {\left\{ {{d_j}} \right\}} \right)\left| j \right\rangle \left| 0 \right\rangle  = \left| j \right\rangle \left| {{d_j}} \right\rangle \]
 
-% The ${U_{AC}}$-gate means arccos function. The control-${R_y}$ gate represents the bit-by-bit control of rotation. If we don't consider $n$ H-gates, $O(m)$ gates are needed altogether \cite{mitarai_quantum_2019}.
+The ${U_{AC}}$-gate means arccos function. The control-${R_y}$ gate represents the bit-by-bit control of rotation. If we don't consider $n$ H-gates, $O(m)$ gates are needed altogether \cite{mitarai_quantum_2019}.
 
-% Thirdly, the normalization. Finally, the coefficients are needed to normalize. After calculation, the normalization coefficient $C$ is $\sqrt {1/\left( {\sum\nolimits_{j = 1}^N {d_j^2} } \right)} $ \cite{mitarai_quantum_2019}.
-
-
-% \paragraph{QADC}
-
-% Mitarai, Kitagawa, and Fujii \cite{mitarai_quantum_2019} gave a deterministic algorithm for a quantum analog-to-digital conversion(QADC).
-% The algorithm includes absolute-QADC, real-QADC and imaginary-QADC.
-% The main idea of these algorithms involves Hadamard test and phase estimation. The real-QADC is mainly used here. An $m$-bit real-QADC operation is defined by 
-% $$
-% {O_{rAD}}{\rm{:}}\sum\nolimits_{k = 1}^N {{c_k}\left| k \right\rangle {{\left| 0 \right\rangle }^{ \otimes m}}}  \to \frac{1}{{\sqrt N }}\sum\nolimits_{k = 1}^N {\left| k \right\rangle \left| {{{\tilde{\textbf x} }_k}} \right\rangle } ,
-% $$
-% where ${\tilde {\textbf x}_k}$ indicates the $m$-bit string $\tilde x_k^{\left( 1 \right)} \cdots \tilde x_k^{\left( m \right)}$ that best approximates the real part ${c_k}$ by $\sum\nolimits_{l = 1}^m {\tilde x_k^{\left( l \right)}{2^{ - l}}} $.
-
-% The quantum circuit of the real-QADC algorithms is given as shown in FIG.\ref{QADC_fig}(a).
-
-% \begin{figure}[htbp]
-%  \subfigure[Real-QADC]{\includegraphics[width=0.50\textwidth]{Fig/real-QADC.png}}
-%  \subfigure[Phase estimation]{\includegraphics[width=0.45\textwidth]{Fig/PE.png}}
-%  \subfigure[Quantum gate $W$]{\includegraphics[width=0.35\textwidth]{Fig/W.png}}
-%  \caption{Quantum circuit: (a) the quantum circuit of the real-QADC algorithms, 
-%  (b) the quantum circuit of phase estimation is in the blue dotted box
-%  and (c) the part of quantum circuit of real-QADC, the green dotted box is $W$.}
-%  \label{QADC_fig}
-% \end{figure}
-
-% $m$ and $n$ represent the number of digits of the desired precision and the number of qubits required to encode data, respectively.
-% And an analog-encoding unitary transformation $U_A(\{c_j\})$ is defined by
-% $${U_A}\left( {\left\{ {{c_j}} \right\}} \right)\left| 0 \right\rangle  = \sum\nolimits_j {{c_j}\left| j \right\rangle },$$
-% where $\left\{ {{c_j}} \right\}_{j = 1}^N$ is classical data and normalized to satisfy $\sum\nolimits_{j = 1}^N {{{\left| {{c_j}} \right|}^2}}  = 1$.
-
-% Gate G is given by
-% $$G = W{S_0}{W^\dag }{Z_B},$$
-% where $W$ is the gate shown in FIG.\ref{QADC_fig}(c), ${S_0} = I - 2{\left( {\left| 0 \right\rangle \left\langle 0 \right|} \right)_{data,B}}$
-% is a conditional phase-shaft gate and ${Z_B}$ is a Pauli-$Z$ gate only acting on qubit $B$.
-
-% PE indicates phase estimation ,IQFT means inverse quantum Fourier transformation\cite{nielsen_quantum_2002}.
-
-% After phase estimation (PE), the phase ${\theta _k}$ of W can be encoded onto the register0 qubits, then use quantum arithmetics operation ${U_{f\left( \theta  \right)}}$ to calculate
-% ${x_k} = f\left( {{\theta _k}} \right) = 2{\sin ^2}\pi {\theta _k} - 1$.
-% Finally, the uncompute the data, B, reg0 qubits, the digital-coded state
-% $\frac{1}{{\sqrt N }}\sum\limits_{k = 0}^N {{{\left| k \right\rangle }_{ad}}{{\left| {{{\tilde {\textbf x}}_k}} \right\rangle }_{reg1}}{{\left| 0 \right\rangle }_{reg0,data,B}}} $
-% is obtained.
+Thirdly, the normalization. Finally, the coefficients are needed to normalize. After calculation, the normalization coefficient $C$ is $\sqrt {1/\left( {\sum\nolimits_{j = 1}^N {d_j^2} } \right)} $ \cite{mitarai_quantum_2019}.
 
 
-% From the quantum circuit of the real-QADC, $2(m+n)+1$ qubits are needed. Due to the gate $S_0$ can be split into $O[(log_{2}N)^2]$($N=2^n$) 
-% single- and two-qubit gates\cite{barenco_elementary_1995}, thus the number of single- and two-qubit gates is $O[(log_{2}N)^2/{\epsilon}]$ and $O[1/{\epsilon}]$ $controlled-U_A$ gates are uesd\cite{mitarai_quantum_2019}.
+\paragraph{QADC}
+
+Mitarai, Kitagawa, and Fujii \cite{mitarai_quantum_2019} gave a deterministic algorithm for a quantum analog-to-digital conversion(QADC).
+The algorithm includes absolute-QADC, real-QADC and imaginary-QADC.
+The main idea of these algorithms involves Hadamard test and phase estimation. The real-QADC is mainly used here. An $m$-bit real-QADC operation is defined by 
+$$
+{O_{rAD}}{\rm{:}}\sum\nolimits_{k = 1}^N {{c_k}\left| k \right\rangle {{\left| 0 \right\rangle }^{ \otimes m}}}  \to \frac{1}{{\sqrt N }}\sum\nolimits_{k = 1}^N {\left| k \right\rangle \left| {{{\tilde{\textbf x} }_k}} \right\rangle } ,
+$$
+where ${\tilde {\textbf x}_k}$ indicates the $m$-bit string $\tilde x_k^{\left( 1 \right)} \cdots \tilde x_k^{\left( m \right)}$ that best approximates the real part ${c_k}$ by $\sum\nolimits_{l = 1}^m {\tilde x_k^{\left( l \right)}{2^{ - l}}} $.
+
+The quantum circuit of the real-QADC algorithms is given as shown in FIG.\ref{QADC_fig}(a).
+
+\begin{figure}[htbp]
+ \subfigure[Real-QADC]{\includegraphics[width=0.50\textwidth]{Fig/real-QADC.png}}
+ \subfigure[Phase estimation]{\includegraphics[width=0.45\textwidth]{Fig/PE.png}}
+ \subfigure[Quantum gate $W$]{\includegraphics[width=0.35\textwidth]{Fig/W.png}}
+ \caption{Quantum circuit: (a) the quantum circuit of the real-QADC algorithms, 
+ (b) the quantum circuit of phase estimation is in the blue dotted box
+ and (c) the part of quantum circuit of real-QADC, the green dotted box is $W$.}
+ \label{QADC_fig}
+\end{figure}
+
+$m$ and $n$ represent the number of digits of the desired precision and the number of qubits required to encode data, respectively.
+And an analog-encoding unitary transformation $U_A(\{c_j\})$ is defined by
+$${U_A}\left( {\left\{ {{c_j}} \right\}} \right)\left| 0 \right\rangle  = \sum\nolimits_j {{c_j}\left| j \right\rangle },$$
+where $\left\{ {{c_j}} \right\}_{j = 1}^N$ is classical data and normalized to satisfy $\sum\nolimits_{j = 1}^N {{{\left| {{c_j}} \right|}^2}}  = 1$.
+
+Gate G is given by
+$$G = W{S_0}{W^\dag }{Z_B},$$
+where $W$ is the gate shown in FIG.\ref{QADC_fig}(c), ${S_0} = I - 2{\left( {\left| 0 \right\rangle \left\langle 0 \right|} \right)_{data,B}}$
+is a conditional phase-shaft gate and ${Z_B}$ is a Pauli-$Z$ gate only acting on qubit $B$.
+
+PE indicates phase estimation ,IQFT means inverse quantum Fourier transformation\cite{nielsen_quantum_2002}.
+
+After phase estimation (PE), the phase ${\theta _k}$ of W can be encoded onto the register0 qubits, then use quantum arithmetics operation ${U_{f\left( \theta  \right)}}$ to calculate
+${x_k} = f\left( {{\theta _k}} \right) = 2{\sin ^2}\pi {\theta _k} - 1$.
+Finally, the uncompute the data, B, reg0 qubits, the digital-coded state
+$\frac{1}{{\sqrt N }}\sum\limits_{k = 0}^N {{{\left| k \right\rangle }_{ad}}{{\left| {{{\tilde {\textbf x}}_k}} \right\rangle }_{reg1}}{{\left| 0 \right\rangle }_{reg0,data,B}}} $
+is obtained.
 
 
-% \subsubsection{Implementing the matrix inverse by linear combination of operators}
-% Any simple function can be linear approximated by linear combination of other
-% functions. We know want to approximate the inverse function of matrix by
-% Chebyshev polynomials. In \cite{doi:10.1137/16M1087072} we know that 
-% \begin{equation}
-% \label{K}
-% K|0^r\rangle|b\rangle=\frac{1}{\alpha}|0^r\rangle F|b\rangle
-% +|\Xi^\bot \rangle\notag
-% \end{equation}
-% $K:=V^\dagger UV$, $U:=\Sigma_i|i\rangle\langle i|
-% \otimes U_i$, 
-% $V|0^m\rangle:=\frac{1}{\sqrt{\alpha}}\Sigma_i\sqrt{\alpha_i}|i\rangle$
-% , $F=\Sigma_i\alpha_iG_i$
-% , $\alpha:=\Sigma_i\alpha_i$, $r=m+t$ and 
-% $(|0^r\rangle\langle0^r|\otimes\mathbbm{1})|\Xi_i^\bot\rangle=0$.
-
-% In our problem, we need the inverse matrix function $f(x) = 1/x$, 
-% it suffice that $O(\lVert A^{-1}-F\rVert)=\epsilon$.
-% The linear combination\cite{doi:10.1137/16M1087072} is
-% \begin{equation}
-% g(x):=4\sum_{j=0}^{j_0}(-1)^j
-% \frac{\sum_{i=j+1}^{b}\begin{pmatrix}
-% 2b\\b+i
-% \end{pmatrix}}{2^{2b}}\mathcal{T}_{2j+1}(x)\notag
-% \end{equation}
-% where $j_0=\sqrt{b log(4b/\epsilon)}$ and $b=\kappa^2log(\kappa/\epsilon)$.
-% $g(x)$ is $2\epsilon$ close to $1/x$ on $D_\kappa:=(-1,-1/\kappa)\cup
-% (1/\kappa,1)$.
-% $\mathcal{T}_{2j+1}(x)$ is the Chebyshev polynomials of the first kind.
-% \paragraph{Quantum Walk}
-% To implement the Chebyshev polynomials, we should do it in a quantum walk 
-% framework. 
-
-% Because the quantum walk performed using a set of states $|\psi_j\rangle$
-% in space $\mathbbm{C}^{2N}\otimes
-% \mathbbm{C}^{2N}$.
-% We have to define a map $T:=\sum_{j\in [N]}|\psi_j\rangle\langle j|$ from
-% $\mathbbm{C}^{N}$ to $\mathbbm{C}^{2N}\otimes\mathbbm{C}^{2N}$.
-% \begin{equation}
-% |\psi_j\rangle:=|j\rangle\otimes \frac{1}{\sqrt{d}}
-% \sum_{k\in [N]:A_{jk}\neq 0}(\sqrt{A^*_{jk}}|k\rangle+\sqrt{1-|A_{jk}|}|k+N
-% \rangle)\notag
-% \end{equation}
-% and the walk operator
-% \begin{equation}
-% W=S(2TT^\dagger-1)\notag
-% \end{equation}
-% The operator $S$ perform the swap operation of the product states in 
-% $|\psi_j\rangle$. Then we can get 
-
-% \begin{equation}
-% T^{\dagger}W^nT|b\rangle=|0^m\rangle\mathcal{T}_n(H)|b\rangle+|\bot_b\rangle\notag
-% \end{equation}
-% $\mathcal{T}_n(\lambda)$ is the first kind of Chebyshev polynomials.
-
-% \paragraph{Quantum Circuit Implement}
-% We use two oracles to extract information of matrix $A$: $O_l$ and $O_A$, which are written as:
-% \begin{align}
-% &O_l|j,l\rangle=|j,f(j,l)\rangle\notag\\
-% &O_A|j,k,z\rangle=|j,k,z\oplus A_{jk}\rangle\notag
-% \end{align}
+From the quantum circuit of the real-QADC, $2(m+n)+1$ qubits are needed. Due to the gate $S_0$ can be split into $O[(log_{2}N)^2]$($N=2^n$) 
+single- and two-qubit gates\cite{barenco_elementary_1995}, thus the number of single- and two-qubit gates is $O[(log_{2}N)^2/{\epsilon}]$ and $O[1/{\epsilon}]$ $controlled-U_A$ gates are uesd\cite{mitarai_quantum_2019}.
 
 
-% Our first goal is to encode the state $\frac{1}
-% {\sqrt{\alpha}}\sum_i^{j_0}\sqrt{\alpha_i}|i\rangle$, it can be prepared with a $O(j_0)$-length quantum circuit.
+\subsubsection{Implementing the matrix inverse by linear combination of operators}
+Any simple function can be linear approximated by linear combination of other
+functions. We know want to approximate the inverse function of matrix by
+Chebyshev polynomials. In \cite{doi:10.1137/16M1087072} we know that 
+\begin{equation}
+\label{K}
+K|0^r\rangle|b\rangle=\frac{1}{\alpha}|0^r\rangle F|b\rangle
++|\Xi^\bot \rangle\notag
+\end{equation}
+$K:=V^\dagger UV$, $U:=\Sigma_i|i\rangle\langle i|
+\otimes U_i$, 
+$V|0^m\rangle:=\frac{1}{\sqrt{\alpha}}\Sigma_i\sqrt{\alpha_i}|i\rangle$
+, $F=\Sigma_i\alpha_iG_i$
+, $\alpha:=\Sigma_i\alpha_i$, $r=m+t$ and 
+$(|0^r\rangle\langle0^r|\otimes\mathbbm{1})|\Xi_i^\bot\rangle=0$.
 
-% Then we construct operator $T$, as shown in \cite{7354428}, the operator $T$ can be synthesised as following.
-% The whole circuit need $log_2(2N)$ qubits for vector $|j\rangle$, likewise 
-% $log_2(2N)$ for its product states and a bunch of auxiliary qubits serve as 
-% control rotation.
+In our problem, we need the inverse matrix function $f(x) = 1/x$, 
+it suffice that $O(\lVert A^{-1}-F\rVert)=\epsilon$.
+The linear combination\cite{doi:10.1137/16M1087072} is
+\begin{equation}
+g(x):=4\sum_{j=0}^{j_0}(-1)^j
+\frac{\sum_{i=j+1}^{b}\begin{pmatrix}
+2b\\b+i
+\end{pmatrix}}{2^{2b}}\mathcal{T}_{2j+1}(x)\notag
+\end{equation}
+where $j_0=\sqrt{b log(4b/\epsilon)}$ and $b=\kappa^2log(\kappa/\epsilon)$.
+$g(x)$ is $2\epsilon$ close to $1/x$ on $D_\kappa:=(-1,-1/\kappa)\cup
+(1/\kappa,1)$.
+$\mathcal{T}_{2j+1}(x)$ is the Chebyshev polynomials of the first kind.
+\paragraph{Quantum Walk}
+To implement the Chebyshev polynomials, we should do it in a quantum walk 
+framework. 
 
-% \begin{itemize}
-% \item $|0^t\rangle\xrightarrow{H}
-% \frac{1}{\sqrt{d}}\sum_{l=0}^{d-1}|l\rangle$
-% \item $|j\rangle\frac{1}{\sqrt{d}}\sum_{l=0}^{d-1}|l
-% \rangle\xrightarrow{O_F}|j\rangle\frac{1}{\sqrt{d}}\sum_{l\in F_j}|l
-% \rangle$
-% \item $|j\rangle\frac{1}{\sqrt{d}}\sum_{l\in F_j}|l\rangle|0\rangle
-% \xrightarrow{O_H}|j\rangle\frac{1}{\sqrt{d}}\sum_{l\in F_j}|l\rangle
-% |A_{jl}\rangle$
-% \item consider the $A_{jl}$ as a sequence of control bit, define a control 
-% rotation operator
+Because the quantum walk performed using a set of states $|\psi_j\rangle$
+in space $\mathbbm{C}^{2N}\otimes
+\mathbbm{C}^{2N}$.
+We have to define a map $T:=\sum_{j\in [N]}|\psi_j\rangle\langle j|$ from
+$\mathbbm{C}^{N}$ to $\mathbbm{C}^{2N}\otimes\mathbbm{C}^{2N}$.
+\begin{equation}
+|\psi_j\rangle:=|j\rangle\otimes \frac{1}{\sqrt{d}}
+\sum_{k\in [N]:A_{jk}\neq 0}(\sqrt{A^*_{jk}}|k\rangle+\sqrt{1-|A_{jk}|}|k+N
+\rangle)\notag
+\end{equation}
+and the walk operator
+\begin{equation}
+W=S(2TT^\dagger-1)\notag
+\end{equation}
+The operator $S$ perform the swap operation of the product states in 
+$|\psi_j\rangle$. Then we can get 
 
-% \begin{equation}
-% M:=\begin{pmatrix}
-% \sqrt{H_{jl}^*/X} & -\sqrt{(1-|H_{jl}|)/X}\\
-% \sqrt{(1-|H_{jl}|)/X} &\sqrt{H_{jl}^*/X}\notag
-% \end{pmatrix}
-% \end{equation}
-% $|H_{jl}\rangle|0\rangle\xrightarrow{M}|H_{jl}\rangle
-% \sqrt{H_{jl}^*/X}|0\rangle+\sqrt{(1-|H_{jl}|)/X}|1\rangle\notag$
+\begin{equation}
+T^{\dagger}W^nT|b\rangle=|0^m\rangle\mathcal{T}_n(H)|b\rangle+|\bot_b\rangle\notag
+\end{equation}
+$\mathcal{T}_n(\lambda)$ is the first kind of Chebyshev polynomials.
 
-% In \cite{PhysRevLett.122.020502}, operator $M$ can be synthesised by an oracle $O_{amp}$
-% \begin{equation}
-% |l\rangle|z\rangle\xrightarrow{O_{amp}}|l\rangle|z\otimes\alpha_l^{(n)}
-% \rangle\notag
-% \end{equation}
-% Our goal is to prepare an approximation to the target state
-% \begin{equation}
-% |target\rangle:=\frac{1}{{\lVert\vec{\alpha}\rVert}_2}\sum_{l=0}^n\alpha_l
-% |l\rangle\notag
-% \end{equation}
-% The key contributor is a operator $M$ as a control rotation operator.
-% \begin{equation}
-% |\alpha\rangle|0\rangle:=|\alpha\rangle(sin(\theta)|0\rangle+
-% cos(\theta)|1\rangle)\notag
-% \end{equation}
-
-% \item apply the $O_H$ again to change the $|H_{jl}\rangle$ back to 
-% $|0\rangle$.
-% \end{itemize}
-
-% \begin{figure}[h]
-% \centering
-% \includegraphics[width=0.45\textwidth]{Fig/T}
-% \caption{Quantum circuit of Operator T}
-% \label{T}
-% \end{figure}
-
-% Next, we show the quanutum circuit of operator $W$. Since $W=S(2TT^\dagger-I_{4N^2})$, $S$ can be easily constructed by a bunch of swap operators.
-% What left to be done is $2TT^\dagger-I_{4N^2}$. 
-% \begin{align}
-% |\psi_j\rangle&=|j\rangle\otimes\frac{1}{\sqrt{d}} 
-% \sum_{k\in [N]:A_{jk}\neq 0}(\sqrt{A^*_{jk}}|k\rangle+\sqrt{1-|A_{jk}|}|k+N
-% \rangle)\notag\\
-% &=|j\rangle\otimes|\phi_j\rangle\notag
-% \end{align}
-% so $TT^\dagger=|j\rangle\langle j|\otimes|\phi_j\rangle\langle\phi_j|$.
-% The operator $T$ is a unitary in the quantum circuit which change
-% the state $|j\rangle|0\rangle$ to $|\psi_j\rangle$. It is different from the
-% $T:=\sum_{j\in[N]}|\psi_j\rangle\langle j|$ with dimension $4N^2\times2N$.
-% To distinguish, we denote the quantum circuit by $T_{qc}$.
-% \begin{align}
-% &T_{qc}(\sum_j|j\rangle\langle j|\otimes(2|0\rangle\langle0|-I_{2N}))
-% T_{qc}^\dagger=\notag\\
-% &\sum_j|j\rangle\langle j|\otimes
-% (2|\phi_j\rangle\langle \phi_j|-I_{2N})=2TT^\dagger-I_{4N^2}\notag
-% \end{align}
-% \begin{align}
-% N&=2|0\rangle\langle0|-I_{2N}\notag \\
-% &=diag(1,-1,-1,\dots,-1)=-diag(-1,1,1,\dots,1)\notag
-% \end{align}
-% \begin{figure}[htbp]
-% \centering
-% \includegraphics[width=0.4\textwidth]{Fig/WW}
-% \caption{The operator $W$}
-% \label{W}
-% \end{figure}
+\paragraph{Quantum Circuit Implement}
+We use two oracles to extract information of matrix $A$: $O_l$ and $O_A$, which are written as:
+\begin{align}
+&O_l|j,l\rangle=|j,f(j,l)\rangle\notag\\
+&O_A|j,k,z\rangle=|j,k,z\oplus A_{jk}\rangle\notag
+\end{align}
 
 
+Our first goal is to encode the state $\frac{1}
+{\sqrt{\alpha}}\sum_i^{j_0}\sqrt{\alpha_i}|i\rangle$, it can be prepared with a $O(j_0)$-length quantum circuit.
 
+Then we construct operator $T$, as shown in \cite{7354428}, the operator $T$ can be synthesised as following.
+The whole circuit need $log_2(2N)$ qubits for vector $|j\rangle$, likewise 
+$log_2(2N)$ for its product states and a bunch of auxiliary qubits serve as 
+control rotation.
+
+\begin{itemize}
+\item $|0^t\rangle\xrightarrow{H}
+\frac{1}{\sqrt{d}}\sum_{l=0}^{d-1}|l\rangle$
+\item $|j\rangle\frac{1}{\sqrt{d}}\sum_{l=0}^{d-1}|l
+\rangle\xrightarrow{O_F}|j\rangle\frac{1}{\sqrt{d}}\sum_{l\in F_j}|l
+\rangle$
+\item $|j\rangle\frac{1}{\sqrt{d}}\sum_{l\in F_j}|l\rangle|0\rangle
+\xrightarrow{O_H}|j\rangle\frac{1}{\sqrt{d}}\sum_{l\in F_j}|l\rangle
+|A_{jl}\rangle$
+\item consider the $A_{jl}$ as a sequence of control bit, define a control 
+rotation operator
+
+\begin{equation}
+M:=\begin{pmatrix}
+\sqrt{H_{jl}^*/X} & -\sqrt{(1-|H_{jl}|)/X}\\
+\sqrt{(1-|H_{jl}|)/X} &\sqrt{H_{jl}^*/X}\notag
+\end{pmatrix}
+\end{equation}
+$|H_{jl}\rangle|0\rangle\xrightarrow{M}|H_{jl}\rangle
+\sqrt{H_{jl}^*/X}|0\rangle+\sqrt{(1-|H_{jl}|)/X}|1\rangle\notag$
+
+In \cite{PhysRevLett.122.020502}, operator $M$ can be synthesised by an oracle $O_{amp}$
+\begin{equation}
+|l\rangle|z\rangle\xrightarrow{O_{amp}}|l\rangle|z\otimes\alpha_l^{(n)}
+\rangle\notag
+\end{equation}
+Our goal is to prepare an approximation to the target state
+\begin{equation}
+|target\rangle:=\frac{1}{{\lVert\vec{\alpha}\rVert}_2}\sum_{l=0}^n\alpha_l
+|l\rangle\notag
+\end{equation}
+The key contributor is a operator $M$ as a control rotation operator.
+\begin{equation}
+|\alpha\rangle|0\rangle:=|\alpha\rangle(sin(\theta)|0\rangle+
+cos(\theta)|1\rangle)\notag
+\end{equation}
+
+\item apply the $O_H$ again to change the $|H_{jl}\rangle$ back to 
+$|0\rangle$.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.45\textwidth]{Fig/T}
+\caption{Quantum circuit of Operator T}
+\label{T}
+\end{figure}
+
+Next, we show the quanutum circuit of operator $W$. Since $W=S(2TT^\dagger-I_{4N^2})$, $S$ can be easily constructed by a bunch of swap operators.
+What left to be done is $2TT^\dagger-I_{4N^2}$. 
+\begin{align}
+|\psi_j\rangle&=|j\rangle\otimes\frac{1}{\sqrt{d}} 
+\sum_{k\in [N]:A_{jk}\neq 0}(\sqrt{A^*_{jk}}|k\rangle+\sqrt{1-|A_{jk}|}|k+N
+\rangle)\notag\\
+&=|j\rangle\otimes|\phi_j\rangle\notag
+\end{align}
+so $TT^\dagger=|j\rangle\langle j|\otimes|\phi_j\rangle\langle\phi_j|$.
+The operator $T$ is a unitary in the quantum circuit which change
+the state $|j\rangle|0\rangle$ to $|\psi_j\rangle$. It is different from the
+$T:=\sum_{j\in[N]}|\psi_j\rangle\langle j|$ with dimension $4N^2\times2N$.
+To distinguish, we denote the quantum circuit by $T_{qc}$.
+\begin{align}
+&T_{qc}(\sum_j|j\rangle\langle j|\otimes(2|0\rangle\langle0|-I_{2N}))
+T_{qc}^\dagger=\notag\\
+&\sum_j|j\rangle\langle j|\otimes
+(2|\phi_j\rangle\langle \phi_j|-I_{2N})=2TT^\dagger-I_{4N^2}\notag
+\end{align}
+\begin{align}
+N&=2|0\rangle\langle0|-I_{2N}\notag \\
+&=diag(1,-1,-1,\dots,-1)=-diag(-1,1,1,\dots,1)\notag
+\end{align}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.4\textwidth]{Fig/WW}
+\caption{The operator $W$}
+\label{W}
+\end{figure}
+
+\subsection{Proof of Theorem 1 and 2}
+\subparagraph{Theorem I} Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
+linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle$.
+
+\subparagraph{Pf:} 1.Necessity: Let $\left|\phi_i\right\rangle = \sum_{j=1}^n \left|x_{ij}\right\rangle$. If there exists linear transformation $A$ s.t.
+\begin{align*}
+A\left|\phi_i\right\rangle = \sum_{i=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
+\end{align*}
+then
+\begin{align*}
+A\sum_{i=1}^{n}\left|\phi_i\right\rangle = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right)\right\rangle
+\end{align*}
+Rearrange the terms. We have: 
+\begin{align*}
+LHS = \sum_{i, j=1}^n\left|x_{ij}\right\rangle\left|f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)\right\rangle = RHS
+\end{align*}
+Therefore, for all $\left(i, j\right) \in \left[1, n\right]\times\left[1, n\right]$, 
+\begin{align*}
+f_{j}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1j}, x_{2j}, ..., x_{nj}\right)
+\end{align*}
+1)While $i=j$, $f_{i}\left(x_{i1}, x_{i2}, ..., x_{in}\right) = f_{i}\left(x_{1i}, x_{2i}, ..., x_{ni}\right)$, i.e., 
+\begin{align*}
+f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
+\end{align*}
+2)While $i\neq j$, $f_j\left(x_{ij}\right) = f_i\left(x_{ij}\right)$, i.e., 
+\begin{align*}
+f_i\left(u\right) = f\left(u\right)
+\end{align*}
+Above all, 
+\begin{align*}
+A\sum_{i=1}^{n}\left|u_i\right\rangle = \sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle
+\end{align*}
+
+2.Sufficiency: Obvious.
+
+\subparagraph{Theorem II} Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
+linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle$.
+
+\subparagraph{Pf:} 1.Necessity: Let $S_n$ be the set of all cycle notations of permutation $\left(1, 2, ..., n\right)$. If there exists linear transformation $A$ s.t. 
+\begin{align*}
+	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_1, u_2, ..., u_n\right)\right\rangle
+\end{align*}
+then, for all $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
+\begin{align*}
+	A\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
+\end{align*}
+Therefore,  
+\begin{align*}
+	&A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|i\right\rangle\left|u_{j_i}\right\rangle \notag\\
+	&=\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right)\right\rangle
+\end{align*}
+And
+\begin{align*}
+	LHS &= A\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n \left|j_i\right\rangle\left|u_i\right\rangle\notag\\
+	&= A\sum_{i=1}^n\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\left|j_i\right\rangle\left|u_i\right\rangle\notag\\
+	&= A\sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle \notag\\
+	&= \sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle\left|f_{k}\left(u_i, u_i, ..., u_i\right)\right\rangle\notag\\
+	&= \sum_{k=1}^n\sum_{i=1}^n\left|i\right\rangle\left|u_k\right\rangle\left|f_{i}\left(u_k, u_k, ..., u_k\right)\right\rangle\notag \\
+	&= \sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)\right\rangle\notag\\
+	&= RHS
+\end{align*}
+Corresponding items must be equal to each other, that is, for all $i \in \left[1, n\right]$ and $\left(j_1, j_2, ..., j_n\right)\in S_n$, 
+\begin{align*}
+	f_{i}\left(u_{j_1}, u_{j_2}, ..., u_{j_n}\right) = f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)
+\end{align*}
+i.e., for any $i\neq j$
+\begin{align*}
+	\frac{\partial f_i\left(u_1, u_2, ..., u_n\right)}{\partial u_j} = 0
+\end{align*}
+in other, 
+\begin{align*}
+	f_i\left(u_1, u_2, ...,u_n\right) = f_i\left(u_i\right)
+\end{align*}
+Hence $A$ should meet the condition: 
+\begin{align*}
+	A\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle
+\end{align*}
+
+2.Sufficiency: Obvious.
 
 \bibliography{cfd_aps}
 \end{document}
