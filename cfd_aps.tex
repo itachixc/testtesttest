@@ -124,6 +124,8 @@ pra,
 
 %\maketitle
 
+\numberwithin{equation}{section}
+
 \section{Introduction}
 Quantum computing is a promising area in computation with wide application to all computational tasks. The common-held belief is that quantum computing potentially offers an exponential acceleration over classical approaches to computing. Many quantum algorithms including quantum factorization, quantum simulation, and the linear problem solver have already appeared that prove this idea. 
 
@@ -516,19 +518,30 @@ In this process, the number of times $M_U$, $O_{adjacent}$, and $O_{coor}$ are u
 
 \subsection{Necessity of QRAM}\label{NecessityQRAM}
 
-QRAM is a quantum analogue to the classical Random Access Memory (RAM). QRAM enables the user obtaining the data in the QRAM efficiently while the address is given in the superposition state. 
-\begin{equation}
-QRAM: \sum_i{|i\rangle|0\rangle}=\sum_i{|i\rangle|U_i\rangle}
-\end{equation}
+QRAM is a quantum analogue to the classical random access memory (RAM). QRAM enables the user to retrieve the data in QRAM efficiently while the address is given in the superposition state, 
+$$QRAM: \sum_i{|i\rangle|0\rangle}=\sum_i{|i\rangle|U_i\rangle}.$$
 The $U_i$ denotes the classical data encoded in the quantum states.
 
-There were several QRAM models proposed in the previous works. A typical one is to implement the QRAM by a set of optical devices, requiring $\mathcal{O}(log N)$ operations (N denotes the memory length). Another more straightforward approach is to realize it with the decomposition of the quantum circuits. However, although the addressing part is realized in $\mathcal{O}(log N)$, the state generation part involves $\mathcal{O}(N)$ multi-controlled NOT gates, which should not be considered as an efficient plan. Here we will introduce an efficiently QRAM only requiring $\mathcal{O}(log N)$ operations in our plan.
+There exist several QRAM models proposed in previous work. One typical model implements the QRAM using a set of optical devices, requiring $O(\log N)$ operations ($N$ denotes the length of the memory). Another more straightforward approach is to realize it with the decomposition of the quantum circuits. However, although the addressing part is realized in $O(\log N)$, the state generation part involves $O(N)$ multi-controlled NOT gates, which is not considered an efficient plan.
+We shall introduce into our plan an efficient QRAM that only requires $O(\log N)$ operations.
 
 \subparagraph{Overall Complexity without QRAM} The classical problem has linear complexity, which greatly constrains the design of the quantum methods, especially quantum--classical hybrid methods. 
 
-It is already known that if one wants to transfer fully components of quantum states into classical memory, at least $O(n)$ times the storage is needed. The pure classical solver uses time integration, an iteration process that is unavoidably necessary. If the result is stored in quantum states with any quantum solver, and we expect the data transferred between each step of the iteration are classical, the “quantum--classical converter” process is inevitable and an $O(n)$ interval of time is consumed, and no acceleration occurs (second case in the Table \ref{ComparisonTable}).
+It is already known that if one wants to transfer fully components of quantum states into classical memory, at least $O(n)$ times the storage is needed. The pure classical solver uses time integration, an iteration process that is unavoidably necessary. If the result is stored in quantum states with any quantum solver, and we expect the data transferred between each step of the iteration are classical, the “quantum--classical converter” process is inevitable and an $O(n)$ interval of time is consumed, and no acceleration occurs (second case in the table \ref{ComparisonTable}).
 
-For the fourth case of the same table, we claim such a plan impossible to implement in practice. The problem is that the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we shall prove formally that this process cannot be implemented by a linear operator. Such operators are considered fundamental in quantum mechanics. The proof is developed in Supplementary Information.
+For the fourth case of the same table, we claim such a plan impossible to implement in practice with two theorem:
+~\\
+
+\textbf{Theorem I} Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
+linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle$.
+~\\
+
+\textbf{Theorem II} Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
+linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^n \left|i\right\rangle\left|u_i\right\rangle\left|f_{i}\left(u_i\right)\right\rangle$.
+~\\
+
+The problem is that the complexity of the query of $O_A$ should be constructed from the previous solved vector $\vec{u}^{n-1}$. As mentioned above, $O_A$ is related to more than one component in $\vec{u}^{n-1}$ for each matrix element, and we shall prove formally that this process cannot be implemented by a linear operator. Such operators are considered fundamental in quantum mechanics. The proof is developed in Supplementary Information \ref{ProofOfTheorem}.
+
 
 \subsection{Quantum Linear Solver}
 
@@ -543,42 +556,26 @@ The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The
 
 We here use the version of Andrew Childs's Chebyshev approach of the quantum linear solver as the accelerator of the calculation. 
 
-\subsection{Overall Circuit and Qubit Number}
-Base on the analyse above, the overall algorithm can be represented as 
-following
+\subparagraph{Quantum Circuit and Number of Qubits}
+On the basis of the analyze above, the overall algorithm is outlined In Fig.~\ref{fig:o}.
+
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.4\textwidth]{Fig/overall}
-\caption{The overall circuit}
-\label{o}
+\caption{Overall circuit}
+\label{fig:o}
 \end{figure}
 
-In Fig.~\ref{o}, $t=\mathcal{O}(log(j_0))$ is the qubits for control bits $\frac{1}
-{\sqrt{\alpha}}\sum_i\sqrt{\alpha_i}|i\rangle$. The total qubits number is 
-\begin{equation}
-2(m+1)+t+C_Aq_f
-\end{equation}
+Here, $t=O(\log(j_0))$ is the number of qubits for the control bits $\frac{1}{\sqrt{\alpha}} \sum_i\sqrt{\alpha_i}|i\rangle$. The total number of qubits is $2(m+1)+t+C_Aq_f$
 
-\subsection{Time Complexity and Successful Probability}
-In \cite{doi:10.1137/16M1087072}, function $1/x$ can be $\epsilon$ approximated by
-linear combination of Chebyshev polynomials with highest order 
-$\mathcal{O}(j_0)=\mathcal{O}(d\kappa log(d\kappa/\epsilon))$, the total
-query complexity is $\mathcal{O}(\alpha j_0)$. Because $\alpha\leqslant 4j_0/d$,
-$\mathcal{O}(\alpha j_0)=\mathcal{O}(d\kappa^2log^2(d\kappa/\epsilon))$. The total number of 
-$\mathcal{P}_B$ is $\mathcal{O}(\alpha)$.
+\subparagraph{Complexity and successful probability}
+In \cite{doi:10.1137/16M1087072}, the function $1/x$ may be $\epsilon$ approximated by a linear combination of Chebyshev polynomials with highest order $O(j_0)=O(d\kappa \log(d\kappa/\epsilon))$. The total query complexity is $O(\alpha j_0)$. Because $\alpha\leqslant 4j_0/d$, $O(\alpha j_0)=O(d\kappa^2\log^2(d\kappa/\epsilon))$. The total number of $\mathcal{P}_B$ is $O(\alpha)$.
 
-In \cite{7354428}, the gate complexity is $\mathcal{O}(d\kappa^2log^2(d\kappa/
-\epsilon)(logN+log^{2.5}(d\kappa/\epsilon))$
-and the success probability is 
-$(\lVert F|b\rangle\rVert/\alpha)^2$. 
+In \cite{7354428}, the gate complexity is $O(d\kappa^2\log^2(d\kappa/\epsilon) (\log N+\log^{2.5}(d\kappa/\epsilon))$ and the probability of success is $(\lVert F|b\rangle\rVert/\alpha)^2$. 
 
-Now the matrix F is the inverse of $A$ 
-which has condition number $\kappa$ and $\lVert A\rVert=1$,
-so $\lVert F|b\rangle\rVert\in (1, \kappa)$.
-\begin{equation}
-P_{succ}\geqslant 1/(16\kappa^2 log(d\kappa/\epsilon) log(4(\kappa d)^2log(d
-\kappa/\epsilon)/\epsilon) 
-\end{equation}
+Now matrix $F$ is the inverse of $A$ and has condition number $\kappa$ and $\lVert A\rVert=1$. 
+
+Hence, $\lVert F|b\rangle\rVert\in (1, \kappa)$. For $\alpha\leqslant4j_0/d$, then $P_{succ}\geqslant 1/(16\kappa^2 \log(d\kappa/\epsilon) \log(4(\kappa d)^2\log(d \kappa/\epsilon)/\epsilon)$.
 
 \subsection{Postprocessing}
 
@@ -607,7 +604,7 @@ The quantum circuit is shown as follows: FIG. \ref{postprocessing_qcir}
 We get the $d_U^{n+1}$ and update $M_U$ with $d_U^{n+1}$. In this process, the qubit number is $m+2q_f$. We use $M_U$ two times,QADC one time and execute quantum adder, the gate complexity is $\mathcal{O}(poly(m))+L(QADC)$.
 
 
-\subsection{classical information extraction}
+\subsection{Classical Information Extraction}
 Classical information extraction is the last step of our quantum algorithm. The final evolution of our algorithm is about digital-encoded states $|\vec{U}\rangle$, which are stored in QRAM. The process of classical information extraction is as follows: Read digital-encoded states $|\vec{U}\rangle$ from QRAM, and then through QDAC they become the analog-coded states $\left| \psi \right\rangle = C\sum\limits_{k = 1}^N {{U_k}\left| k \right\rangle}$, where $C = \sqrt{{1 \mathord{\left/{\vphantom {1 {\left( {\sum\nolimits_{j = 1}^N {U_j^2} } \right)}}} \right. \kern-\nulldelimiterspace}{\left( {\sum\nolimits_{j = 1}^N {U_j^2} } \right)}}}$. Finally, we measure the analog-coded state $\left| \psi \right\rangle $.
 
 We use N mesh cells during the calculation. Because the number $N$ is relatively large, we reduce the $N$ grids to $N_1$ grids when sampling, and then sample $\mathcal{O}(N_1)$ times to obtain the classical information of the final output.
@@ -761,7 +758,7 @@ Mitarai, Kitagawa, and Fujii \cite{mitarai_quantum_2019} gave a deterministic al
 The algorithm includes absolute-QADC, real-QADC and imaginary-QADC.
 The main idea of these algorithms involves Hadamard test and phase estimation. The real-QADC is mainly used here. An $m$-bit real-QADC operation is defined by 
 \begin{equation}
-{O_{rAD}}{\rm{:}}\sum\nolimits_{k = 1}^N {{c_k}\left| k \right\rangle {{\left| 0 \right\rangle }^{ \otimes m}}}  \to \frac{1}{{\sqrt N }}\sum\nolimits_{k = 1}^N {\left| k \right\rangle \left| {{{\tilde{\textbf x} }_k}} \right\rangle } ,
+{O_{rAD}}{\rm{:}}\sum\nolimits_{k = 1}^N {{c_k}\left| k \right\rangle {{\left| 0 \right\rangle }^{ \otimes m}}}  \to \frac{1}{{\sqrt N }}\sum\nolimits_{k = 1}^N {\left| k \right\rangle \left| {{{\tilde{\textbf x} }_k}} \right\rangle },
 \end{equation}
 where ${\tilde {\textbf x}_k}$ indicates the $m$-bit string $\tilde x_k^{\left( 1 \right)} \cdots \tilde x_k^{\left( m \right)}$ that best approximates the real part ${c_k}$ by $\sum\nolimits_{l = 1}^m {\tilde x_k^{\left( l \right)}{2^{ - l}}} $.
 
@@ -953,7 +950,7 @@ N&=2|0\rangle\langle0|-I_{2N}\notag \\
 \label{W}
 \end{figure}
 
-\subsection{Proof of Theorem 1 and 2}
+\subsection{Proof of Theorem 1 and 2}\label{ProofOfTheorem}
 \subparagraph{Theorem I} Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
 linear transformation $A$ independent of $\left|u_{i}\right\rangle$ s.t. $\left|\psi\right\rangle = A\left|\phi\right\rangle$, iff $\left|\psi\right\rangle$ could express as $\sum_{i=1}^{n}\left|u_i\right\rangle\left|f\left(u_i\right)\right\rangle$.
 
