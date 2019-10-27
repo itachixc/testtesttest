@@ -51,7 +51,7 @@ pra,
 \usepackage{bm} 
 \usepackage{amssymb}
 \usepackage{tikz}
-%\usepackage{hyperref}% add hypertext capabilities
+\usepackage{hyperref} % add hypertext capabilities
 %\usepackage[mathlines]{lineno}% Enable numbering of text and display math
 %\linenumbers\relax % Commence numbering lines
 
@@ -124,22 +124,20 @@ pra,
 
 %\maketitle
 
-\numberwithin{equation}{section}
-
 \section{Introduction}
-Quantum computing is a promising area in computation with wide application to all computational tasks. The common-held belief is that quantum computing potentially offers an exponential acceleration over classical approaches to computing. Many quantum algorithms including quantum factorization, quantum simulation, and the linear problem solver have already appeared that prove this idea. 
+Quantum computing is a promising area in computation with wide application to all computational tasks. The common-held belief is that quantum computing potentially offers an exponential acceleration over classical approaches to computing. Many quantum algorithms including quantum factorization\cite{shor1999polynomial, xu2012quantum}, quantum simulation\cite{georgescu2014quantum, Berry2014Proceedings, berry2015hamiltonian, o2016scalable}, and the linear problem solver \cite{PhysRevLett.103.150502, ambainis2010variable, Childs2017Quantum} have already appeared that prove this idea. 
 
-An inherent feature of quantum computing is its “quantum parallelism”. An n-qubit quantum state is a vector in the Hilbert space $C^{2^n}$ (a complex linear space). Every quantum operation is a transformation in this linear space. If the quantum state vector encodes the description to a realistic problem, then a change in the vector can be handled with one operation in parallel without iterating over the state of each qubit. For example, for-loops are no longer needed if we want to multiply a matrix and vector. Indeed, only a few quantum gates applied directly to the input quantum states is all that is required. This feature enables a group of algorithms, called the quantum linear algebra, that are exponentially faster than their classical counterparts.
+An inherent feature of quantum computing is its quantum parallelism. An n-qubit quantum state is a vector in the Hilbert space $C^{2^n}$ (a complex linear space). Every quantum operation is a transformation in this linear space. If the quantum state vector encodes the description to a realistic problem, then a change in the vector can be handled with one operation in parallel without iterating over the state of each qubit. For example, for-loops are no longer needed if we want to multiply a matrix and vector. Indeed, only a few quantum gates applied directly to the input quantum states is all that is required. This feature enables a group of algorithms, called the quantum linear algebra, that are exponentially faster than their classical counterparts.
 
-Computational fluid dynamics (CFD) problems are often related to solving a series of equations in numerical methods. Here, we do not introduce the classical CFD method. Nevertheless, we need to mention that a CFD solver needs to perform time integrations on partial derivative equations and hence needs to iterate using time increments $\Delta t$ to calculate small evolutions of the system, stopping when the system becomes stable. In this problem set, we need to understand the SU2 solver and try to replace some modules with quantum subroutines, (a.k.a., the quantum--classical hybrid approach) to seek quantum speedups in their execution.
+Computational fluid dynamics (CFD) problems are often related to solving a series of equations in numerical methods\cite{jameson1981numerical, ferziger2002computational, hirsch2007numerical, cambier2013onera}. Here, we do not introduce the classical CFD method. Nevertheless, we need to mention that a CFD solver needs to perform time integrations on partial derivative equations and hence needs to iterate using time increments $\Delta t$ to calculate small evolutions of the system, stopping when the system becomes stable. In this problem set, we need to understand the SU2 solver \cite{economon2016su2} and try to replace some modules with quantum subroutines, (a.k.a., the quantum--classical hybrid approach) to seek quantum speedups in their execution.
 
 Here we introduce our algorithm. The modules that we replace are data structures used and methods in the class called CFluidIteration. In the data structure, they are replaced by quantum memory or the collection of quantum states that include information about the mesh setting and all vectors that are involved in the linear equations. For the time integrations, the linear solver is replaced by a quantum version. In pre- and post-processing stages, they are completely replaced by quantum arithmetic modules to form the oracle necessary in the quantum linear solver.
 
-Moreover, we do not change the problem model, the mesh setting, and the FVM method, including the iteration process of the time integration.
+Moreover, we do not change the problem model, the mesh setting, and the Finite volume method (FVM) \cite{jameson1981numerical, eymard2000finite, ferziger2002computational, hirsch2007numerical, barth2018finite, herbin2019conservativity}, including the iteration process of the time integration.
 
 As a result, the time complexity of our algorithm is proportional to $\log N$, where $N$ denotes the number of cells in the mesh or simply mesh number. The number of qubits is also proportional to $\log N$. Furthermore, the effect of mesh number, both the complexity and the number of qubits are affected by the precision $\epsilon$. We also discussed the conditional number and the sparsity. They affect the time complexity; however, they are considered as constant in the problem because they do not vary much.
 
-Along with the details of the algorithm, we also discuss the difficulties of the problem. One is that we prove that it is necessary to include quantum random access memory (QRAM), without which quantum speedup cannot be achieved. Another is that the qubit should be a fault-tolerant logical qubit, because the requirements of gate number and the state storage time greatly exceed any limit of noisy intermediate-scale quantum devices in the near-future.
+Along with the details of the algorithm, we also discuss the difficulties of the problem. One is that we prove that it is necessary to include quantum random access memory (QRAM) \cite{giovannetti2008architectures, giovannetti2008quantum, moiseev2014multi, arunachalam2015robustness, naik2017random, park2019circuit,di2019fault,hann2019hardware}, without which quantum speedup cannot be achieved. Another is that the qubit should be a fault-tolerant logical qubit\cite{divincenzo1996fault, preskill1998fault, aharonov1999fault, steane1999efficient, bacon2000universal, raussendorf2007fault, benhelm2008towards, lund2008fault, chow2014implementing}, because the requirements of gate number and the state storage time greatly exceed any limit of noisy intermediate-scale quantum devices in the near-future.
 
 
 \section{Submission Summary}
@@ -262,7 +260,7 @@ and classical memory.
 
 A trivial way of the quantum-to-classical is to do with repeatedly measurements, or as people always mention "quantum tomography". The trivial classical-to-quantum is to encode the state preparation phase in the quantum circuit by using a group of controlled rotation operations. These ways are trivial because they consume $\mathcal{O}(2^n)$ time, while we think it is not efficient. If the quantum-classical conversion is not implemented efficiently, many quantum algorithms will never realize the sublinear time complexity, because the input and the output will at least consume linear time.
 
-To solve this problem, we have to assume the existence of the quantum random access memory (QRAM). The QRAM is a structure where we could save and load quantum information efficiently. Different as the trivial way, the QRAM operates the address in the superposition. It enables the digital form quantum data (compared to the analog form, as described in Supplementary Chapter QDAC/QADC) to be loaded and stored in parallel with the time complexity $\mathcal{O}(\log N)$.
+To solve this problem, we have to assume the existence of the quantum random access memory (QRAM). The QRAM is a structure where we could save and load quantum information efficiently. Different as the trivial way, the QRAM operates the address in the superposition. It enables the digital form quantum data (compared to the analog form, as described in Supplementary Chapter QDAC/QADC\cite{mitarai2019quantum, martin2019digital}) to be loaded and stored in parallel with the time complexity $\mathcal{O}(\log N)$.
 
 We believe that if quantum computer wants to solve realistic CFD problems with sublinear complexity, the QRAM must exist. We will prove it in the Section \ref{NecessityQRAM}.
 
@@ -281,7 +279,7 @@ In this section, we use the following symbols:
 
 An important application of modern CFD is simulating systems in aircraft aerodynamic design. The usual application of classical algorithms often develops high complexity, forcing more effective and efficient means of computation to be sought, such as quantum--classical hybrid solutions.
 
-For brevity, we assume the flow to be two-dimensional, inviscid, and steady, and simply state the Euler equations\cite{euler1757principes}, a special form of the Navier--Stokes equation:
+For brevity, we assume the flow to be two-dimensional, inviscid, and steady, and simply state the Euler equations\cite{euler1757principes, hirsch2007numerical, anderson2010fundamentals}, a special form of the Navier--Stokes equation:
 \begin{align}\label{eq:differential_equation}
 \frac{\partial U}{\partial t} + \nabla \cdot \bm{F} = 0
 \end{align}
@@ -335,7 +333,8 @@ For any volume $\Omega$ and its boundary $\partial\Omega$, Formula.\ref{eq:diffe
 	\frac{\partial}{\partial t}\int_\Omega U d V + \oint_{\partial \Omega} \bm{F} \cdot d \bm{S} = 0
 \end{align}
 
-One effective approach to solve the conservation equation is the Finite Volume Method (FVM) \cite{eymard2000finite}. To solve the partial differential equations, discretization using numerical grid is necessary. Each spatial point is a node, identified by a set of indices; for example, $\left(i, j\right)$ in the 2-D case, and the set of nodes linked via their nearest neighbors combine to form a lattice. The midpoints of the lines between two adjacent nodes and the centerpoints of adjacent lattices determine the cell surrounding a node \cite{economon2015su2}. The conservation equation is applied to each cell of the grid. With this spatial discretization, the operations of calculus—the partial differentials—are replaced by their numerical approximations. We chose the implicit Euler scheme to deal with the time differential.
+One effective approach to solve the conservation equation is the Finite Volume Method (FVM) \cite{eymard2000finite}.
+ To solve the partial differential equations, discretization using numerical grid is necessary. Each spatial point is a node, identified by a set of indices; for example, $\left(i, j\right)$ in the 2-D case, and the set of nodes linked via their nearest neighbors combine to form a lattice. The midpoints of the lines between two adjacent nodes and the centerpoints of adjacent lattices determine the cell surrounding a node \cite{economon2016su2}. The conservation equation is applied to each cell of the grid. With this spatial discretization, the operations of calculus—the partial differentials—are replaced by their numerical approximations. We chose the implicit Euler scheme to deal with the time differential.
 
 \begin{figure}[h]
 	\centering  
@@ -361,7 +360,7 @@ Introducing the concept of artificial dissipation, $\bm{F}^\prime_{i+\frac{1}{2}
 \end{align}
 where $\kappa^{\left(2\right)}$ and $\kappa^{\left(4\right)}$ are arbitrary non-dimensional coefficients that we assume to be $\frac{1}{2}$ and $\frac{1}{64}$.
 
-Let $\Delta U^{n}$ be equal to $U^{n+1}-U^{n}$, and consider the $k-th$ components of $U$ \cite{economon2015su2}; then
+Let $\Delta U^{n}$ be equal to $U^{n+1}-U^{n}$, and consider the $k-th$ components of $U$ \cite{economon2016su2}; then
 \begin{align}
 \left(\frac{\Omega_{i, j}}{\Delta t}\delta_{i, i^\prime}\delta_{j, j^\prime}
 +\left.\frac{\partial R_{i,j,k}}{\partial U_{i^\prime,j^\prime,k^\prime}}\right|_{U=U^n}\right) \Delta U^{n}_{i^\prime,j^\prime,k^\prime} = -R^{n}_{i,j,k}
@@ -495,11 +494,12 @@ To compute $A_{4i_0+i_1,4j_0+j_1}$, we first construct
 |4i_0+i_1,4j_0+j_1\rangle|\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}\rangle.
 \end{equation}
 Then $f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})$ is an arithmetic expression of $\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}$. We then obtain
-
-\begin{align}
+\begin{equation}
+\begin{aligned}
 |4i_0+i_1,4j_0+j_1\rangle&|\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}\rangle\\
 &|f_{i_0,i_1,j_0,j_1}(\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0})\rangle.
-\end{align}
+\end{aligned} 
+\end{equation}
 
 Finally, we uncompute $\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}$,
 \begin{equation}
@@ -518,8 +518,10 @@ In this process, the number of times $M_U$, $O_{adjacent}$, and $O_{coor}$ are u
 
 \subsection{Necessity of QRAM}\label{NecessityQRAM}
 
-QRAM is a quantum analogue to the classical random access memory (RAM). QRAM enables the user to retrieve the data in QRAM efficiently while the address is given in the superposition state, 
-$$QRAM: \sum_i{|i\rangle|0\rangle}=\sum_i{|i\rangle|U_i\rangle}.$$
+QRAM is a quantum analogue to the classical Random Access Memory (RAM). QRAM enables the user obtaining the data in the QRAM efficiently while the address is given in the superposition state. 
+\begin{equation}
+QRAM: \sum_i{|i\rangle|0\rangle}=\sum_i{|i\rangle|U_i\rangle}
+\end{equation}
 The $U_i$ denotes the classical data encoded in the quantum states.
 
 There exist several QRAM models proposed in previous work. One typical model implements the QRAM using a set of optical devices, requiring $O(\log N)$ operations ($N$ denotes the length of the memory). Another more straightforward approach is to realize it with the decomposition of the quantum circuits. However, although the addressing part is realized in $O(\log N)$, the state generation part involves $O(N)$ multi-controlled NOT gates, which is not considered an efficient plan.
@@ -569,9 +571,9 @@ On the basis of the analyze above, the overall algorithm is outlined In Fig.~\re
 Here, $t=O(\log(j_0))$ is the number of qubits for the control bits $\frac{1}{\sqrt{\alpha}} \sum_i\sqrt{\alpha_i}|i\rangle$. The total number of qubits is $2(m+1)+t+C_Aq_f$
 
 \subparagraph{Complexity and successful probability}
-In \cite{doi:10.1137/16M1087072}, the function $1/x$ may be $\epsilon$ approximated by a linear combination of Chebyshev polynomials with highest order $O(j_0)=O(d\kappa \log(d\kappa/\epsilon))$. The total query complexity is $O(\alpha j_0)$. Because $\alpha\leqslant 4j_0/d$, $O(\alpha j_0)=O(d\kappa^2\log^2(d\kappa/\epsilon))$. The total number of $\mathcal{P}_B$ is $O(\alpha)$.
+In \cite{Childs2017Quantum}, the function $1/x$ may be $\epsilon$ approximated by a linear combination of Chebyshev polynomials with highest order $O(j_0)=O(d\kappa \log(d\kappa/\epsilon))$. The total query complexity is $O(\alpha j_0)$. Because $\alpha\leqslant 4j_0/d$, $O(\alpha j_0)=O(d\kappa^2\log^2(d\kappa/\epsilon))$. The total number of $\mathcal{P}_B$ is $O(\alpha)$.
 
-In \cite{7354428}, the gate complexity is $O(d\kappa^2\log^2(d\kappa/\epsilon) (\log N+\log^{2.5}(d\kappa/\epsilon))$ and the probability of success is $(\lVert F|b\rangle\rVert/\alpha)^2$. 
+In \cite{berry2015hamiltonian}, the gate complexity is $O(d\kappa^2\log^2(d\kappa/\epsilon) (\log N+\log^{2.5}(d\kappa/\epsilon))$ and the probability of success is $(\lVert F|b\rangle\rVert/\alpha)^2$. 
 
 Now matrix $F$ is the inverse of $A$ and has condition number $\kappa$ and $\lVert A\rVert=1$. 
 
@@ -726,7 +728,7 @@ In this section, we introduce the quantum circuit modules used in our algorithm 
 
 
 \subsection{QDAC and QADC}
-Mitarai, Kitagawa, and Fujii \cite{mitarai_quantum_2019} gave a deterministic algorithm for quantum digital-to-analog conversion(QDAC) and quantum analog-to-digital conversion(QADC). We first introduce these two quantum circuit modules.
+Mitarai, Kitagawa, and Fujii \cite{mitarai2019quantum} gave a deterministic algorithm for quantum digital-to-analog conversion(QDAC) and quantum analog-to-digital conversion(QADC). We first introduce these two quantum circuit modules.
 \paragraph{QDAC}
 
 The purpose of QDAC is to change a quantum state encoded by numbers between $0$ and $1$ into the amplitude before the quantum state. So the QADC operation is defined by
@@ -734,7 +736,7 @@ The purpose of QDAC is to change a quantum state encoded by numbers between $0$ 
 
 The main idea of the QDAC algorithm is to turn the coefficients in front of each ground state through a rotation of auxiliary bits. Now we want to explain only the following three questions.
 
-Firstly, the probability of success. The QDAC algorithm has only a certain probability of success and a certain probability of failure in operation. If it fails, run the algorithm from scratch. After calculation, the probability of one-time success is $\sum\nolimits_{j = 1}^N {d_j^2/N} $\cite{mitarai_quantum_2019}.
+Firstly, the probability of success. The QDAC algorithm has only a certain probability of success and a certain probability of failure in operation. If it fails, run the algorithm from scratch. After calculation, the probability of one-time success is $\sum\nolimits_{j = 1}^N {d_j^2/N} $\cite{mitarai2019quantum}.
 
 Secondly, we give the circuit diagram of the algorithm.
 
@@ -747,18 +749,17 @@ Secondly, we give the circuit diagram of the algorithm.
 The $n$ indicates the number of qubits required to encode data. The $m$ represents the number of digits of the desired precision. In the end, we only need to compute the upper bit. The function of ${U_D}$-gate is as follows:
 \[{U_D}\left( {\left\{ {{d_j}} \right\}} \right)\left| j \right\rangle \left| 0 \right\rangle  = \left| j \right\rangle \left| {{d_j}} \right\rangle \]
 
-The ${U_{AC}}$-gate means arccos function. The control-${R_y}$ gate represents the bit-by-bit control of rotation. If we don't consider $n$ H-gates, $\mathcal{O}(m)$ gates are needed altogether \cite{mitarai_quantum_2019}.
+The ${U_{AC}}$-gate means arccos function. The control-${R_y}$ gate represents the bit-by-bit control of rotation. If we don't consider $n$ H-gates, $\mathcal{O}(m)$ gates are needed altogether \cite{mitarai2019quantum}.
 
-Thirdly, the normalization. Finally, the coefficients are needed to normalize. After calculation, the normalization coefficient $C$ is $\sqrt {1/\left( {\sum\nolimits_{j = 1}^N {d_j^2} } \right)} $ \cite{mitarai_quantum_2019}.
+Thirdly, the normalization. Finally, the coefficients are needed to normalize. After calculation, the normalization coefficient $C$ is $\sqrt {1/\left( {\sum\nolimits_{j = 1}^N {d_j^2} } \right)} $ \cite{mitarai2019quantum}.
 
 
 \paragraph{QADC}
 
-Mitarai, Kitagawa, and Fujii \cite{mitarai_quantum_2019} gave a deterministic algorithm for a quantum analog-to-digital conversion(QADC).
-The algorithm includes absolute-QADC, real-QADC and imaginary-QADC.
+The QADC algorithm includes absolute-QADC, real-QADC and imaginary-QADC.
 The main idea of these algorithms involves Hadamard test and phase estimation. The real-QADC is mainly used here. An $m$-bit real-QADC operation is defined by 
 \begin{equation}
-{O_{rAD}}{\rm{:}}\sum\nolimits_{k = 1}^N {{c_k}\left| k \right\rangle {{\left| 0 \right\rangle }^{ \otimes m}}}  \to \frac{1}{{\sqrt N }}\sum\nolimits_{k = 1}^N {\left| k \right\rangle \left| {{{\tilde{\textbf x} }_k}} \right\rangle },
+{O_{rAD}}{\rm{:}}\sum\nolimits_{k = 1}^N {{c_k}\left| k \right\rangle {{\left| 0 \right\rangle }^{ \otimes m}}}  \to \frac{1}{{\sqrt N }}\sum\nolimits_{k = 1}^N {\left| k \right\rangle \left| {{{\tilde{\textbf x} }_k}} \right\rangle } ,
 \end{equation}
 where ${\tilde {\textbf x}_k}$ indicates the $m$-bit string $\tilde x_k^{\left( 1 \right)} \cdots \tilde x_k^{\left( m \right)}$ that best approximates the real part ${c_k}$ by $\sum\nolimits_{l = 1}^m {\tilde x_k^{\left( l \right)}{2^{ - l}}} $.
 
@@ -767,10 +768,10 @@ The quantum circuit of the real-QADC algorithms is given as shown in FIG.\ref{QA
 \begin{figure}[htbp]
  \subfigure[Real-QADC]{\includegraphics[width=0.50\textwidth]{Fig/real-QADC.png}}
  \subfigure[Phase estimation]{\includegraphics[width=0.45\textwidth]{Fig/PE.png}}
- \subfigure[Quantum gate $W$]{\includegraphics[width=0.35\textwidth]{Fig/W.png}}
+ \subfigure[Quantum gate $Q$]{\includegraphics[width=0.35\textwidth]{Fig/Q.png}}
  \caption{Quantum circuit: (a) the quantum circuit of the real-QADC algorithms, 
  (b) the quantum circuit of phase estimation is in the blue dotted box
- and (c) the part of quantum circuit of real-QADC, the green dotted box is $W$.}
+ and (c) the part of quantum circuit of real-QADC, the green dotted box is $Q$.}
  \label{QADC_fig}
 \end{figure}
 
@@ -783,14 +784,14 @@ where $\left\{ {{c_j}} \right\}_{j = 1}^N$ is classical data and normalized to s
 
 Gate G is given by
 \begin{equation}
-G = W{S_0}{W^\dag }{Z_B},
+G = Q{S_0}{Q^\dag }{Z_B},
 \end{equation}
-where $W$ is the gate shown in FIG.\ref{QADC_fig}(c), ${S_0} = I - 2{\left( {\left| 0 \right\rangle \left\langle 0 \right|} \right)_{data,B}}$
+where $Q$ is the gate shown in FIG.\ref{QADC_fig}(c), ${S_0} = I - 2{\left( {\left| 0 \right\rangle \left\langle 0 \right|} \right)_{data,B}}$
 is a conditional phase-shaft gate and ${Z_B}$ is a Pauli-$Z$ gate only acting on qubit $B$.
 
 PE indicates phase estimation ,IQFT means inverse quantum Fourier transformation\cite{nielsen_quantum_2002}.
 
-After phase estimation (PE), the phase ${\theta _k}$ of W can be encoded onto the register0 qubits, then use quantum arithmetics operation ${U_{f\left( \theta  \right)}}$ to calculate
+After phase estimation (PE), the phase ${\theta _k}$ of Q can be encoded onto the register0 qubits, then use quantum arithmetics operation ${U_{f\left( \theta  \right)}}$ to calculate
 ${x_k} = f\left( {{\theta _k}} \right) = 2{\sin ^2}\pi {\theta _k} - 1$.
 Finally, the uncompute the data, B, reg0 qubits, the digital-coded state
 $\frac{1}{{\sqrt N }}\sum\limits_{k = 0}^N {{{\left| k \right\rangle }_{ad}}{{\left| {{{\tilde {\textbf x}}_k}} \right\rangle }_{reg1}}{{\left| 0 \right\rangle }_{reg0,data,B}}} $
@@ -798,13 +799,13 @@ is obtained.
 
 
 From the quantum circuit of the real-QADC, $2(m+n)+1$ qubits are needed. Due to the gate $S_0$ can be split into $O[(log_{2}N)^2]$($N=2^n$) 
-single- and two-qubit gates\cite{barenco_elementary_1995}, thus the number of single- and two-qubit gates is $O[(log_{2}N)^2/{\epsilon}]$ and $O[1/{\epsilon}]$ $controlled-U_A$ gates are uesd\cite{mitarai_quantum_2019}.
+single- and two-qubit gates\cite{barenco_elementary_1995}, thus the number of single- and two-qubit gates is $O[(log_{2}N)^2/{\epsilon}]$ and $O[1/{\epsilon}]$ $controlled-U_A$ gates are uesd\cite{mitarai2019quantum}.
 
 
 \subsubsection{Implementing the matrix inverse by linear combination of operators}
 Any simple function can be linear approximated by linear combination of other
 functions. We know want to approximate the inverse function of matrix by
-Chebyshev polynomials. In \cite{doi:10.1137/16M1087072} we know that 
+Chebyshev polynomials. In \cite{Childs2017Quantum} we know that 
 \begin{equation}
 \label{K}
 K|0^r\rangle|b\rangle=\frac{1}{\alpha}|0^r\rangle F|b\rangle
@@ -819,7 +820,7 @@ $(|0^r\rangle\langle0^r|\otimes\mathbbm{1})|\Xi_i^\bot\rangle=0$.
 
 In our problem, we need the inverse matrix function $f(x) = 1/x$, 
 it suffice that $\mathcal{O}(\lVert A^{-1}-F\rVert)=\epsilon$.
-The linear combination\cite{doi:10.1137/16M1087072} is
+The linear combination\cite{Childs2017Quantum} is
 \begin{equation}
 g(x):=4\sum_{j=0}^{j_0}(-1)^j
 \frac{\sum_{i=j+1}^{b}\begin{pmatrix}
@@ -867,7 +868,7 @@ We use two oracles to extract information of matrix $A$: $O_l$ and $O_A$, which 
 Our first goal is to encode the state $\frac{1}
 {\sqrt{\alpha}}\sum_i^{j_0}\sqrt{\alpha_i}|i\rangle$, it can be prepared with a $\mathcal{O}(j_0)$-length quantum circuit.
 
-Then we construct operator $T$, as shown in \cite{7354428}, the operator $T$ can be synthesised as following.
+Then we construct operator $T$, as shown in \cite{berry2015hamiltonian}, the operator $T$ can be synthesised as following.
 The whole circuit need $log_2(2N)$ qubits for vector $|j\rangle$, likewise 
 $log_2(2N)$ for its product states and a bunch of auxiliary qubits serve as 
 control rotation.
