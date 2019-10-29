@@ -15,3 +15,5 @@ cfd_aps.out
 full.pdf
 full.fls
 full.fdb_latexmk
+full.blg
+full.bbl
