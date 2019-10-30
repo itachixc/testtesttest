@@ -146,7 +146,7 @@ Along with the details of the algorithm, we also discuss the difficulties of the
 
 \subsubsection{Replacement of the SU2 submodule}
 
-SU2 is an open-source fluid dynamics solver. We study its SU2\_CFD module to solve the CFD problem, the objective being to replace some modules in the classical solver by quantum subprocesses to form a quantum--classical hybrid software, and finally to demonstrate quantum speedup. As in Fig.~\ref{SU2modules}, we mark the modules we replace by the quantum subroutines in the SU2 solver.
+SU2 is an open-source fluid dynamics solver. We study its SU2\_CFD module to solve the CFD problem, the objective being to replace some modules in the classical solver by quantum subprocesses to form a quantum--classical hybrid software, and finally to demonstrate quantum speedup. As in Fig. \ref{SU2modules}, we mark the modules we replace by the quantum subroutines in the SU2 solver.
 
 \begin{figure*}[htbp]
     \subfigure{\includegraphics[width=0.95\textwidth]{Fig/SU2_process.png}}
@@ -204,7 +204,6 @@ In Sec.~\ref{detail}, we will analyze in detail the complexity of each module of
 	\caption{Space complexity.} \label{qnumfig}
 \end{figure}
 
-
 \begin{table*}
 	\caption{Comparison of quantum approach and classical approach}\label{tab2}
 	\resizebox{\textwidth}{!}{ \begin{tabular}{|c|c|c|c|c|}
@@ -226,7 +225,7 @@ In Sec.~\ref{detail}, we will analyze in detail the complexity of each module of
 
 \subsection{Simulation time of Classical Solution}
 
-The implicit Euler solver has linear complexity. We support this result with two proofs: one from theory and the other from experiment. The theory shows that the classical solver uses a multigrid method, which is expected to have complexity $\mathcal{O}(N)$ where $N$ denotes the number of mesh cells. We also performed an experiment on various grid sizes and calculated the running time (except the preparation). Fig.~\ref{su2Speed} shows that the runtimes exhibit very good linearity with the number of mesh cells.
+The implicit Euler solver has linear complexity. We support this result with two proofs: one from theory and the other from experiment. The theory\cite{MultigridBook} shows that the classical solver uses a multigrid method, which is expected to have complexity $\mathcal{O}(N)$ where $N$ denotes the number of mesh cells. We also performed an experiment on various grid sizes and calculated the running time (except the preparation). Figure \ref{su2Speed} shows that the runtimes exhibit very good linearity with the number of mesh cells.
 
 \begin{figure} 
 \centering
@@ -236,10 +235,10 @@ The implicit Euler solver has linear complexity. We support this result with two
 
 Whether the time integration can be cancelled to avoid the iteration process is unclear, but here we do not change the iteration process. Instead, we seek a quantum approach with a sublinear runtime between each iteration step.
 
-\subsection{Classical Simulation for Our Quantum Approach}
-We code this quantum-classical hybrid solver for CFD problem. In general, it is a combination of the SU2 and a quantum programming framework.
+\subsection{Programming Our Quantum Approach}
+We programmed this quantum-classical hybrid solver for CFD problem by combining the SU2 and a quantum programming framework. Here we selected QPanda, because QPanda and its OriginIR (a quantum intermediate representation) supports the definition and simulation of any quantum oracles.
 
-In the classical simulation, simulating quantum oracles is vital in this work. Here we choose QPanda, because QPanda and its OriginIR (an intermediate representation) supports the definition and simulation of any quantum oracles. 
+We successfully generate the quantum circuit of this problem. However, the given example of the CFD problem cannot be efficiently simulated with our algorithm, because more than 50 qubits are needed to run this example. 
 
 \subsection{Possible Improvement on the Mesh Generation}
 Besides the acceleration in the time integration process, the mesh generation module can also be integrated in the quantum computer.
@@ -280,8 +279,8 @@ In this section, we use the following symbols:
 \item ITimes: Iteration times
 \item $\vec{U}_i=(\rho,\rho u, \rho\nu, \rho E)$, variables in $i^{th}$ mesh.
 \item $|\vec{U}\rangle=\{\vec{U}_i, i=0,1,2,...,N-1\}$, $|\vec{U}\rangle$ represents all variables of the problem, the dimension is $4N$.
-
 \end{itemize}
+
 \subsection{FVM method}\label{classicalFVM}
 
 An important application of modern CFD is simulating systems in aircraft aerodynamic design. The usual application of classical algorithms often develops high complexity, forcing more effective and efficient means of computation to be sought, such as quantum--classical hybrid solutions.
@@ -533,7 +532,7 @@ We shall introduce into our plan an efficient QRAM that only requires $O(\log N)
 
 \subparagraph{Overall Complexity without QRAM} The classical problem has linear complexity, which greatly constrains the design of the quantum methods, especially quantum--classical hybrid methods. 
 
-It is already known that if one wants to transfer fully components of quantum states into classical memory, at least $O(N)$ times the storage is needed. The pure classical solver uses time integration, an iteration process that is unavoidably necessary. If the result is stored in quantum states with any quantum solver, and we expect the data transferred between each step of the iteration are classical, the “quantum--classical converter” process is inevitable and an $O(N)$ interval of time is consumed, and no acceleration occurs (second case in the table \ref{ComparisonTable}).
+It is already known that if one wants to transfer fully components of quantum states into classical memory, at least $O(N)$ times the storage is needed. The pure classical solver uses time integration, an iteration process that is unavoidably necessary. If the result is stored in quantum states with any quantum solver, and we expect the data transferred between each step of the iteration are classical, the ``quantum--classical converter'' process is inevitable and an $O(N)$ interval of time is consumed, and no acceleration occurs (second case in the table \ref{ComparisonTable}).
 
 For the fourth case of the same table, we claim such a plan impossible to implement in practice with two theorem:
 ~\\
@@ -563,7 +562,8 @@ The first quantum linear solver was developed by Harrow, Hassidim and Lloyd. The
 We here use the version of Andrew Childs's Chebyshev approach of the quantum linear solver as the accelerator of the calculation. 
 
 \subparagraph{Quantum Circuit and Number of Qubits}
-On the basis of the analyze above, the overall algorithm is outlined In Fig.~\ref{fig:o}.
+The overall quantum circuit of our quantum linear solver is shown in Fig.~\ref{fig:o}. The details of this quantum circuit is explained in Sec.\ref{MatrixInverse}.
+% On the basis of the analyze above, the overall algorithm is outlined In Fig.~\ref{fig:o}.
 
 \begin{figure}[htbp]
 \centering
@@ -619,6 +619,7 @@ Assuming that the $j^{\text{th}}$ grid after dimension reduction contains $a_j$ 
 
 Finally, we sample $M$ times because QDAC is a probabilistic operation; in other words, there is a probability that $p = \sum\nolimits_{j = 1}^N {{{U_j^2} \mathord{\left/{\vphantom {{U_j^2} N}} \right. \kern-\nulldelimiterspace} N}} $ successfully converts the digital-encoded information into analog-coded information. Therefore, we need $M/p$ times to extract information from QRAM and $M/p$ times QDAC.
 
+Finally, we sample $M$ times because QDAC is a probabilistic operation; in other words, there is a probability that $p = \sum\nolimits_{j = 1}^N {{{U_j^2} \mathord{\left/{\vphantom {{U_j^2} N}} \right. \kern-\nulldelimiterspace} N}} $ successfully converts the digital-encoded information into analog-coded information. Therefore, we need $M/p$ times to extract information from QRAM and $M/p$ times QDAC.
 \subsection{Overall Complexity Analysis}
 
 In this section, we analyze the complexity of the entire algorithm flow. The required number of qubits of the whole process is 
@@ -633,11 +634,11 @@ and
 \begin{equation}
 p_{A^{-1}}=\frac{1}{\alpha}.
 \end{equation}
-Here $C_{max}>=max\{\Delta U_i\}$ and $\mathcal{O}(\alpha)=\mathcal{O}(\kappa\log(\kappa d/\epsilon))$. $p_{QDAC}$ is a constant number and hence can be ignored. Oracles $O_{adjacent}$ and $O_{coor}$ appear $\mathcal{O}(1)$ times in the quantum circuit of $O_l,O_b,O_A$, and $O_l$,$O_A$ appears $\mathcal{O}(j_0)$ times in each iteration. Hence, the query complexity for both $O_{adjacent}$ and $O_{coor}$ is $\mathcal{O}(\alpha ITimes\times j_0)$.
+Here $C_{max}>=max\{\Delta U_i\}$ and $\mathcal{O}(\alpha)=\mathcal{O}(\kappa\log(\kappa d/\epsilon))$. $p_{QDAC}$ is a constant number and hence can be ignored. Oracles $O_{adjacent}$ and $O_{coor}$ appear $\mathcal{O}(1)$ times in the quantum circuit of $O_l,O_b,O_A$, and $O_l$,$O_A$ appears $\mathcal{O}(j_0)$ times in each iteration. Hence, the query complexity for both $O_{adjacent}$ and $O_{coor}$ is $\mathcal{O}(\alpha\times ITimes\times j_0)$.
 
 QRAM $M_U$ also appears $\mathcal{O}(1)$ times in constructing $O_b$ and $O_A$, the query complexity of $M_U$ being $\mathcal{O}(\alpha ITimes\times j_0)$. In each iteration, we update $M_U$, the update complexity of $M_U$ being $\mathcal{O}(ITimes)$.
 
-The gate complexity of the whole process is $\mathcal{O}(\alpha j_0poly(\log(4N))/\epsilon)$.
+The gate complexity of the whole process is $\mathcal{O}(ITimes\times\alpha j_0poly(\log(4N))/\epsilon)$.
 
 
 \subsection{Normalization explanation}
@@ -699,14 +700,22 @@ To linearize equation~\ref{eq:Delta_u_prime_equations}.2, we replace ${\Delta u^
 \end{equation}
 For state $\left|\Delta U^{\prime}\right\rangle$, the normalization constant is always $1$. Then, we can accomplish the mathematical operations freely (using the first $N$ components of $\left|\Delta U^{\prime}\right\rangle$). For $N$ sufficiently large, $\bm{A^{\prime}}$ is also a sparse matrix and therefore we can construct it efficiently.
 
+\subsection{Programming and Code Availability}
+We program the quantum linear solver part of this algorithm. This part takes the linear equation generated by SU2 as the input, and outputs the quantum circuit which encodes the equation. This program combines the SU2 modules and the quantum programming framework ``QPanda''.
 
+\subsubsection{Dealing with quantum oracles}
+QPanda supports the definition and simulation for the quantum oracles. Quantum oracle is a black box which represents a certain quantum state transformation. A typical example of the quantum oracles is the quantum function:
+\begin{equation}
+	O|x\rangle|0\rangle = |x\rangle|f(x)\rangle,
+\end{equation} 
+which computes the f(x) with the first quantum register as the input and the second as the output. Another example is that the  QRAM can be treated as an oracle. Many quantum algorithms use oracle, while they do not care about the implementation of the oracle - it can either be decomposited into quantum gates, or be realized by a QRAM.
 
-\subsection{Numerical simulation}
+In QPanda, we can use the function ``oracle'' to define one. The oracle is considered as a quantum gate with a name given by the user and its implementation is unknown. In the Core/VirtualQuantumProcessor, where the quantum simulators (Quantum Virtual Machine) are defined, we can append the simulation method of the defined oracle to the quantum simulator.
 
-We did some numerical simulations, 
-programm the quantum circuit
+\subsubsection{Code Availability}
+The pages after the references are the core part of our codes. The file name is marked at the header. The full code is named as ``QSolver.cpp'', ``QSolver\_h.cpp'' and ``main.cpp''. The full code has the dependencies of both QPanda and SU2 so that it cannot be run independently. We can open source our full test codes on the GitHub at any time if required.
 
-
+Another version, which is our test codes, named with the postfix ``linear\_solver\_test'' is what we used to test the linear solver part. It can run only depending on the QPanda, which can be installed following the QPanda tutorial at GitHub.
 
 \section{Conclusion}
 
@@ -804,7 +813,7 @@ From the quantum circuit of the real-QADC, $2(m+n)+1$ qubits are needed. Due to 
 single- and two-qubit gates\cite{barenco_elementary_1995}, thus the number of single- and two-qubit gates is $O[(log_{2}N)^2/{\epsilon}]$ and $O[1/{\epsilon}]$ $controlled-U_A$ gates are uesd\cite{mitarai2019quantum}.
 
 
-\subsubsection{Implementing the matrix inverse by linear combination of operators}
+\subsubsection{Implementing the matrix inverse by linear combination of operators}\label{MatrixInverse}
 Any simple function can be linear approximated by linear combination of other
 functions. We know want to approximate the inverse function of matrix by
 Chebyshev polynomials. In \cite{Childs2017Quantum} we know that 
@@ -947,11 +956,12 @@ G&=2|0\rangle\langle0|-I_{2N}\notag \\
 &=diag(1,-1,-1,\dots,-1)=-diag(-1,1,1,\dots,1)\notag
 \end{align}
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=0.4\textwidth]{Fig/WW}
-\caption{The operator $W$}
-\label{W}
+	\subfigure[Reflection operator $G$]{\includegraphics[width=0.20\textwidth]{Fig/G.png}}
+	\subfigure[$W$ operator]{\includegraphics[width=0.45\textwidth]{Fig/WW.png}}
+	\caption{Quantum circuit of operator $G$ and $W$}
+	\label{W}
 \end{figure}
+
 
 \subsection{Proof of Theorem 1 and 2}\label{ProofOfTheorem}
 \subparagraph{Theorem I} Let $\left|\phi\right\rangle = \sum_{i=1}^n \left|u_i\right\rangle$ ($\left|u_i\right\rangle$ parallel to basis vectors and orthogonal each other). There exists 
@@ -1010,7 +1020,6 @@ And
 	&= \bm{A}\sum_{i=1}^n\sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\left|j_i\right\rangle\left|u_i\right\rangle\notag\\
 	&= \bm{A}\sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle \notag\\
 	&= \sum_{i=1}^n\sum_{k=1}^n\left|k\right\rangle\left|u_i\right\rangle\left|f_{k}\left(u_i, u_i, ..., u_i\right)\right\rangle\notag\\
-	&= \sum_{k=1}^n\sum_{i=1}^n\left|i\right\rangle\left|u_k\right\rangle\left|f_{i}\left(u_k, u_k, ..., u_k\right)\right\rangle\notag \\
 	&= \sum_{\left(j_1, j_2, ..., j_n\right)\in S_n}\sum_{i=1}^n\left|i\right\rangle\left|u_{j_i}\right\rangle\left|f_{i}\left(u_{j_i}, u_{j_i}, ..., u_{j_i}\right)\right\rangle\notag\\
 	&= RHS
 \end{align*}
