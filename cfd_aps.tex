@@ -195,7 +195,7 @@ The relationship between mesh size and qubit number is shown in Fig.~\ref{qnumfi
 \end{equation}
 The gate complexity is 
 \begin{equation}
-\mathcal{O}(d\kappa^2\log^2(d\kappa/\epsilon)\times poly(\log(4N)/\epsilon))
+\mathcal{O}(d\kappa^2\log^2(d\kappa/\epsilon)\times \text{poly}(\log(4N)/\epsilon))
 \end{equation}
 In Sec.~\ref{detail}, we will analyze in detail the complexity of each module of our algorithm.
 \begin{figure} 
@@ -278,7 +278,7 @@ In this section, we use the following symbols:
 \item $q_f$: qubit number to represent a float number
 \item ITimes: Iteration times
 \item $\vec{U}_i=(\rho,\rho u, \rho\nu, \rho E)$, variables in $i^{th}$ mesh.
-\item $|\vec{U}\rangle=\{\vec{U}_i, i=0,1,2,...,N-1\}$, $|\vec{U}\rangle$ represents all variables of the problem, the dimension is $4N$.
+\item $\vec{U}=\{\vec{U}_i, i=0,1,2,...,N-1\}$, $\vec{U}$ represents all variables of the problem, the dimension is $4N$.
 \end{itemize}
 
 \subsection{FVM method}\label{classicalFVM}
@@ -414,35 +414,35 @@ M_U\frac{1}{\sqrt{4N}}\sum_i{|i\rangle|0\rangle}=\frac{1}{\sqrt{4N}}\sum_i{|i\ra
 
 \subsubsection{Meshing scheme oracle}
 
-The meshing scheme oracle is used to encode the meshing scheme into the quantum circuit. We define two such oracles: $O_{adjacent}$ and $O_{coor}$. $O_{adjacent}$ is used to extract the adjacent grid number of a specified grid and is written
+The meshing scheme oracle is used to encode the meshing scheme into the quantum circuit. We define two such oracles: $O_{\rm adjacent}$ and $O_{\rm coor}$. $O_{\rm adjacent}$ is used to extract the adjacent grid number of a specified grid and is written
 \begin{equation}
-O_{adjacent}|i\rangle|j\rangle=|i\rangle|g(i,j)\rangle,
+O_{\rm adjacent}|i\rangle|j\rangle=|i\rangle|g(i,j)\rangle,
 \end{equation}
-that is, the $j^{th}$ adjacent grid number of grid $i$ is $g(i,j)$. $O_{coor}$ is used to extract the coordinates of a grid,
+that is, the $j^{th}$ adjacent grid number of grid $i$ is $g(i,j)$. $O_{\rm coor}$ is used to extract the coordinates of a grid,
 \begin{equation}
-O_{coor}|i\rangle|0\rangle=|i\rangle|\vec{x}_i\rangle.
+O_{\rm coor}|i\rangle|0\rangle=|i\rangle|\vec{x}_i\rangle.
 \end{equation}
-Here $\vec{x}_i$ denotes the coordinates of each corner of grid $i$. We can get other positional information with $O_{coor}$, such as the coordinates for the center of gravity of the grid and the normal to each edge of the grid $i$.
+Here $\vec{x}_i$ denotes the coordinates of each corner of grid $i$. We can get other positional information with $O_{\rm coor}$, such as the coordinates for the center of gravity of the grid and the normal to each edge of the grid $i$.
 
-The number of qubits required to construct $O_{adjacent}$ and $O_{coor}$ is $2(m-2)$, $m-2+C_0q_f$, respectively; here $C_0q_f$ is a qubit sequence representing coordinate information and other positional information obtained from the grid coordinates, and $C_0$ is a constant number.
+The number of qubits required to construct $O_{\rm adjacent}$ and $O_{\rm coor}$ is $2(m-2)$, $m-2+C_0q_f$, respectively; here $C_0q_f$ is a qubit sequence representing coordinate information and other positional information obtained from the grid coordinates, and $C_0$ is a constant number.
 
-The construction complexity of $O_{adjacent}$ and $O_{coor}$ is related to the complexity of the meshing scheme. In our method, we assume this complexity is $\mathcal{O}({\rm poly}(\log(N)))$, so the complexity of $O_{adjacent}$ and $O_{coor}$ is $\mathcal{O}({\rm poly}(\log(N)))$. 
+The construction complexity of $O_{\rm adjacent}$ and $O_{\rm coor}$ is related to the complexity of the meshing scheme. In our method, we assume this complexity is $\mathcal{O}({\rm poly}(\log(N)))$, so the complexity of $O_{\rm adjacent}$ and $O_{\rm coor}$ is $\mathcal{O}({\rm poly}(\log(N)))$. 
 
 After initialization, we execute the iteration process, which contains three sub-processes: preprocessing, quantum linear solver, and postprocessing.
 
 \subsection{Preprocessing}
-In the preprocessing step, we construct the oracles that represent matrix $\bm{A}$ and vector $\vec{b}$ in one iteration process. In this step, we use the QRAM $M_U$ and oracles $O_{adjacent}$ and $O_{coor}$ to construct $O_l$, $O_b$, and $O_A$.
+In the preprocessing step, we construct the oracles that represent matrix $\bm{A}$ and vector $\vec{b}$ in one iteration process. In this step, we use the QRAM $M_U$ and oracles $O_{\rm adjacent}$ and $O_{\rm coor}$ to construct $O_l$, $O_b$, and $O_A$.
 
 \subsubsection{Oracle $O_l$}
 The action of $O_l$ on the states may be written as
 \begin{equation}
 O_l|i\rangle|j\rangle=|i\rangle|f(i,j)\rangle,
 \end{equation}
-where $f(i,j)$ represents the column number of the $j^{th}$ nonzero element of the $i^{th}$ row of $\bm{A}$. We use $O_{adjacent}$ to construct $f(i,j)$, which may be written as
+where $f(i,j)$ represents the column number of the $j^{th}$ nonzero element of the $i^{th}$ row of $\bm{A}$. We use $O_{\rm adjacent}$ to construct $f(i,j)$, which may be written as
 \begin{equation}
 f(i,j)=4g(i/4,j/4)+j\%4.
 \end{equation}
-There is a trick in constructing the quantum circuit of this process (Fig.~\ref{fig:OL}). We simply operate $O_{adjacent}$ on the highest $\log(N)$ qubits of $i$ and $j$; then, in the entire space of $|i\rangle$ and $|j\rangle$, we have constructed $O_l$. The required number of qubits is $2m$ in this process.
+There is a trick in constructing the quantum circuit of this process (Fig.~\ref{fig:OL}). We simply operate $O_{\rm adjacent}$ on the highest $\log(N)$ qubits of $i$ and $j$; then, in the entire space of $|i\rangle$ and $|j\rangle$, we have constructed $O_l$. The required number of qubits is $2m$ in this process.
 
 \begin{figure}[htbp]
     \subfigure{\includegraphics[width=0.30\textwidth]{Fig/OL.png}}
@@ -455,15 +455,15 @@ The action of $O_b$ on the state $|0\rangle$ may be written
 \begin{equation}
 O_b|0\rangle=\sum_i{b_i|i\rangle}.
 \end{equation}
-As stated in Sec.~\ref{classicalFVM}, $\vec{b}$ represents the residual $\vec{R}$. We find $R_i$ is a function of variables and coordinates of the $(i/4)^{th}$ cell and its adjacent cells. In particular, the expression for these functions is regular; specifically, the expression for $b_i$ is only related to $i\%4$ , so we can construct $b_i$ efficiently. In detail, we use $M_U$, $O_l$, $O_{coor}$ to construct $O_b$ (Fig.\ref{fig:OB}). First, we get the related variables and coordinates,
+As stated in Sec.~\ref{classicalFVM}, $\vec{b}$ represents the residual $\vec{R}$. We find $R_i$ is a function of variables and coordinates of the $(i/4)^{th}$ cell and its adjacent cells. In particular, the expression for these functions is regular; specifically, the expression for $b_i$ is only related to $i\%4$ , so we can construct $b_i$ efficiently. In detail, we use $M_U$, $O_l$, $O_{\rm coor}$ to construct $O_b$ (Fig.\ref{fig:OB}). First, we get the related variables and coordinates,
 \begin{equation}
-|i\rangle|U_{related}\rangle|x_{related}\rangle.
+|i\rangle|U_{\rm related}\rangle|x_{\rm related}\rangle.
 \end{equation}
 Then, we compute $b_i$ and obtain
 \begin{equation}
-|i\rangle|U_{related}\rangle|x_{related}\rangle|b_i\rangle.
+|i\rangle|U_{\rm related}\rangle|x_{\rm related}\rangle|b_i\rangle.
 \end{equation}
-Next, we uncompute $|U_{related}\rangle$ and $|x_{related}\rangle$,
+Next, we uncompute $|U_{\rm related}\rangle$ and $|x_{\rm related}\rangle$,
 \begin{equation}
 |i\rangle|b_i\rangle.
 \end{equation}
@@ -478,14 +478,14 @@ Finally, we operate with QDAC and finish this process,
     \label{fig:OB}
 \end{figure}
 
-In this process, the required number of qubits is $m+C_bq_f$, $C_bq_f$ is an ancilla qubit sequence used to compute $b_i$; it can also be used in QDAC quantum circuit. We assume the success rate of QDAC is $p_{QDAC}$, then the number of times $M_U$, $O_{adjacent}$ and $O_{coor}$ are used is $\mathcal{O}(1/p_{QDAC})$. The gate complexity is $\mathcal{O}({\rm poly}(m)/p_{QDAC}+poly(1/\epsilon p_{QDAC}))$, with $\epsilon$ representing the QDAC accuracy.
+In this process, the required number of qubits is $m+C_bq_f$, $C_bq_f$ is an ancilla qubit sequence used to compute $b_i$; it can also be used in QDAC quantum circuit. We assume the success rate of QDAC is $p_{QDAC}$, then the number of times $M_U$, $O_{\rm adjacent}$ and $O_{\rm coor}$ are used is $\mathcal{O}(1/p_{QDAC})$. The gate complexity is $\mathcal{O}({\rm poly}(m)/p_{QDAC}+{\rm poly}(1/\epsilon p_{QDAC}))$, with $\epsilon$ representing the QDAC accuracy.
 
 \subsubsection{Oracle $O_A$}
 The action of operator $O_A$ on the states may be written as
 \begin{equation}
 O_A|i\rangle|j\rangle|z\rangle=|i\rangle|j\rangle|z\oplus A_{ij}\rangle.
 \end{equation}
-To construct $O_A$, we also need $M_U$, $O_l$, and $O_{coor}$. As stated in Sec.~\ref{classicalFVM}, matrix $\bm{A}$ is sparse and the element $A_{4i_0+i_1,4j_0+j_1} $ is nonzero only if grid $i_0$ and $j_0$ are adjacent; here $i_0,j_0\in[0,N-1]$ and $i_1,j_1\in[0,3]$, and hence we have $i=4i_0+i_1$ and $j=4j_0+j_1$. Element $A_{4i_0+i_1,4j_0+j_1}$ is a function of variables and coordinates of the grid $i_0$ and $j_0$ that may be written
+To construct $O_A$, we also need $M_U$, $O_l$, and $O_{\rm coor}$. As stated in Sec.~\ref{classicalFVM}, matrix $\bm{A}$ is sparse and the element $A_{4i_0+i_1,4j_0+j_1} $ is nonzero only if grid $i_0$ and $j_0$ are adjacent; here $i_0,j_0\in[0,N-1]$ and $i_1,j_1\in[0,3]$, and hence we have $i=4i_0+i_1$ and $j=4j_0+j_1$. Element $A_{4i_0+i_1,4j_0+j_1}$ is a function of variables and coordinates of the grid $i_0$ and $j_0$ that may be written
 \begin{equation}
 A_{4i_0+i_1,4j_0+j_1}=f_{i_0,i_1,j_0,j_1}
 (\vec{u}_{i_0},\vec{u}_{j_0},\vec{x}_{i_0},\vec{x}_{j_0}).
@@ -517,7 +517,7 @@ We thus realize $O_A$; the corresponding quantum circuit is shown in Fig.~\ref{f
     \label{fig:OA}
 \end{figure}
 
-In this process, the number of times $M_U$, $O_{adjacent}$, and $O_{coor}$ are used is $\mathcal{O}(1)$. The required number of qubits is $2m+C_Aq_f$, with $C_Aq_f$ being an ancilla qubit sequence used to compute $A_{ij}$. The gate complexity is $\mathcal{O}({\rm poly}(m))$. The expression of $A_{ij}$ is more complicated than $b_i$, so $C_A>=C_b$, and the number of qubits used in $O_l,O_b,O_A$ is $2m+C_Aq_f$.
+In this process, the number of times $M_U$, $O_{\rm adjacent}$, and $O_{\rm coor}$ are used is $\mathcal{O}(1)$. The required number of qubits is $2m+C_Aq_f$, with $C_Aq_f$ being an ancilla qubit sequence used to compute $A_{ij}$. The gate complexity is $\mathcal{O}({\rm poly}(m))$. The expression of $A_{ij}$ is more complicated than $b_i$, so $C_A>=C_b$, and the number of qubits used in $O_l,O_b,O_A$ is $2m+C_Aq_f$.
 
 \subsection{Necessity of QRAM}\label{NecessityQRAM}
 
@@ -624,21 +624,21 @@ Finally, we sample $M$ times because QDAC is a probabilistic operation; in other
 
 In this section, we analyze the complexity of the entire algorithm flow. The required number of qubits of the whole process is 
 \begin{equation}
-qnum=2(m+1)+\log(j_0)+C_Aq_f
+\text{qnum}=2(m+1)+\log(j_0)+C_Aq_f
 \end{equation}
 As shown previously, $\mathcal{O}(j_0)=\mathcal{O}(d\kappa\log(d\kappa/\epsilon))$. In each iteration, two subprocesses might fail: the QDAC operation in the construction process of $O_b$ and the linear combination of Chebyshev polynomials in the construction of $\bm{A}^{-1}$. The success rates corresponding to these two subprocesses are
 \begin{equation}
-p_{QDAC}=\frac{1}{4N}\sum_i{(\Delta U_i/C_{max})^2}
+p_{QDAC}=\frac{1}{4N}\sum_i{(\Delta U_i/C_{\rm max})^2}
 \end{equation}
 and
 \begin{equation}
 p_{A^{-1}}=\frac{1}{\alpha}.
 \end{equation}
-Here $C_{max}>=max\{\Delta U_i\}$ and $\mathcal{O}(\alpha)=\mathcal{O}(\kappa\log(\kappa d/\epsilon))$. $p_{QDAC}$ is a constant number and hence can be ignored. Oracles $O_{adjacent}$ and $O_{coor}$ appear $\mathcal{O}(1)$ times in the quantum circuit of $O_l,O_b,O_A$, and $O_l$,$O_A$ appears $\mathcal{O}(j_0)$ times in each iteration. Hence, the query complexity for both $O_{adjacent}$ and $O_{coor}$ is $\mathcal{O}(\alpha\times ITimes\times j_0)$.
+Here $C_{\rm max}>=\max\{\Delta U_i\}$ and $\mathcal{O}(\alpha)=\mathcal{O}(\kappa\log(\kappa d/\epsilon))$. $p_{QDAC}$ is a constant number and hence can be ignored. Oracles $O_{\rm adjacent}$ and $O_{\rm coor}$ appear $\mathcal{O}(1)$ times in the quantum circuit of $O_l,O_b,O_A$, and $O_l$,$O_A$ appears $\mathcal{O}(j_0)$ times in each iteration. Hence, the query complexity for both $O_{\rm adjacent}$ and $O_{\rm coor}$ is $\mathcal{O}(\alpha\times {\rm ITimes}\times j_0)$.
 
-QRAM $M_U$ also appears $\mathcal{O}(1)$ times in constructing $O_b$ and $O_A$, the query complexity of $M_U$ being $\mathcal{O}(\alpha ITimes\times j_0)$. In each iteration, we update $M_U$, the update complexity of $M_U$ being $\mathcal{O}(ITimes)$.
+QRAM $M_U$ also appears $\mathcal{O}(1)$ times in constructing $O_b$ and $O_A$, the query complexity of $M_U$ being $\mathcal{O}(\alpha {\rm ITimes}\times j_0)$. In each iteration, we update $M_U$, the update complexity of $M_U$ being $\mathcal{O}({\rm ITimes})$.
 
-The gate complexity of the whole process is $\mathcal{O}(ITimes\times\alpha j_0poly(\log(4N))/\epsilon)$.
+The gate complexity of the whole process is $\mathcal{O}({\rm ITimes}\times\alpha j_0poly(\log(4N))/\epsilon)$.
 
 
 \subsection{Normalization explanation}
@@ -802,15 +802,15 @@ is a conditional phase-shaft gate and ${Z_B}$ is a Pauli-$Z$ gate only acting on
 
 PE indicates phase estimation ,IQFT means inverse quantum Fourier transformation\cite{nielsen_quantum_2002}.
 
-After phase estimation (PE), the phase ${\theta _k}$ of Q can be encoded onto the register0 qubits, then use quantum arithmetics operation ${U_{f\left( \theta  \right)}}$ to calculate
+After phase estimation (PE), the phase ${\theta _k}$ of $Q$ can be encoded onto the register0 qubits, then use quantum arithmetics operation ${U_{f\left( \theta  \right)}}$ to calculate
 ${x_k} = f\left( {{\theta _k}} \right) = 2{\sin ^2}\pi {\theta _k} - 1$.
 Finally, the uncompute the data, B, reg0 qubits, the digital-coded state
-$\frac{1}{{\sqrt N }}\sum\limits_{k = 0}^N {{{\left| k \right\rangle }_{ad}}{{\left| {{{\tilde {\textbf x}}_k}} \right\rangle }_{reg1}}{{\left| 0 \right\rangle }_{reg0,data,B}}} $
+$\frac{1}{{\sqrt N }}\sum\limits_{k = 0}^N {{{\left| k \right\rangle }_{\text{ad}}}{{\left| {{{\tilde {\textbf x}}_k}} \right\rangle }_{\text{reg}1}}{{\left| 0 \right\rangle }_{\text{reg}0,\text{data},B}}} $
 is obtained.
 
 
-From the quantum circuit of the real-QADC, $2(m+n)+1$ qubits are needed. Due to the gate $S_0$ can be split into $O[(log_{2}N)^2]$($N=2^n$) 
-single- and two-qubit gates\cite{barenco_elementary_1995}, thus the number of single- and two-qubit gates is $O[(log_{2}N)^2/{\epsilon}]$ and $O[1/{\epsilon}]$ $controlled-U_A$ gates are uesd\cite{mitarai2019quantum}.
+From the quantum circuit of the real-QADC, $2(m+n)+1$ qubits are needed. Due to the gate $S_0$ can be split into $O[(\log_{2}N)^2]$($N=2^n$) 
+single- and two-qubit gates\cite{barenco_elementary_1995}, thus the number of single- and two-qubit gates is $O[(\log_{2}N)^2/{\epsilon}]$ and $O(1/{\epsilon})$ controlled-$U_A$ gates are uesd\cite{mitarai2019quantum}.
 
 
 \subsubsection{Implementing the matrix inverse by linear combination of operators}\label{MatrixInverse}
@@ -838,7 +838,7 @@ g(x):=4\sum_{j=0}^{j_0}(-1)^j
 2b\\b+i
 \end{pmatrix}}{2^{2b}}\mathcal{T}_{2j+1}(x)\notag
 \end{equation}
-where $j_0=\sqrt{b log(4b/\epsilon)}$ and $b=\kappa^2log(\kappa/\epsilon)$.
+where $j_0=\sqrt{b \log(4b/\epsilon)}$ and $b=\kappa^2\log(\kappa/\epsilon)$.
 $g(x)$ is $2\epsilon$ close to $1/x$ on $D_\kappa:=(-1,-1/\kappa)\cup
 (1/\kappa,1)$.
 $\mathcal{T}_{2j+1}(x)$ is the Chebyshev polynomials of the first kind.
@@ -880,8 +880,8 @@ Our first goal is to encode the state $\frac{1}
 {\sqrt{\alpha}}\sum_i^{j_0}\sqrt{\alpha_i}|i\rangle$, it can be prepared with a $\mathcal{O}(j_0)$-length quantum circuit.
 
 Then we construct operator $T$, as shown in \cite{berry2015hamiltonian}, the operator $T$ can be synthesised as following.
-The whole circuit need $log_2(2N)$ qubits for vector $|j\rangle$, likewise 
-$log_2(2N)$ for its product states and a bunch of auxiliary qubits serve as 
+The whole circuit need $\log_2(2N)$ qubits for vector $|j\rangle$, likewise 
+$\log_2(2N)$ for its product states and a bunch of auxiliary qubits serve as 
 control rotation.
 
 \begin{itemize}
@@ -907,18 +907,18 @@ $|H_{jl}\rangle|0\rangle\xrightarrow{M}|H_{jl}\rangle
 
 In \cite{PhysRevLett.122.020502}, operator $M$ can be synthesised by an oracle $O_{amp}$
 \begin{equation}
-|l\rangle|z\rangle\xrightarrow{O_{amp}}|l\rangle|z\otimes\alpha_l^{(n)}
+|l\rangle|z\rangle\xrightarrow{O_{\text{amp}}}|l\rangle|z\otimes\alpha_l^{(n)}
 \rangle\notag
 \end{equation}
 Our goal is to prepare an approximation to the target state
 \begin{equation}
-|target\rangle:=\frac{1}{{\lVert\vec{\alpha}\rVert}_2}\sum_{l=0}^n\alpha_l
+|\text{target}\rangle:=\frac{1}{{\lVert\vec{\alpha}\rVert}_2}\sum_{l=0}^n\alpha_l
 |l\rangle\notag
 \end{equation}
 The key contributor is a operator $M$ as a control rotation operator.
 \begin{equation}
-|\alpha\rangle|0\rangle:=|\alpha\rangle(sin(\theta)|0\rangle+
-cos(\theta)|1\rangle)\notag
+|\alpha\rangle|0\rangle:=|\alpha\rangle(\sin(\theta)|0\rangle+
+\cos(\theta)|1\rangle)\notag
 \end{equation}
 
 \item apply the $O_H$ again to change the $|H_{jl}\rangle$ back to 
@@ -952,13 +952,13 @@ T_{qc}^\dagger=\notag\\
 (2|\phi_j\rangle\langle \phi_j|-I_{2N})=2TT^\dagger-I_{4N^2}\notag
 \end{align}
 \begin{align}
-G&=2|0\rangle\langle0|-I_{2N}\notag \\
+K&=2|0\rangle\langle0|-I_{2N}\notag \\
 &=diag(1,-1,-1,\dots,-1)=-diag(-1,1,1,\dots,1)\notag
 \end{align}
 \begin{figure}[htbp]
-	\subfigure[Reflection operator $G$]{\includegraphics[width=0.20\textwidth]{Fig/G.png}}
+	\subfigure[Reflection operator $K$]{\includegraphics[width=0.20\textwidth]{Fig/K.png}}
 	\subfigure[$W$ operator]{\includegraphics[width=0.45\textwidth]{Fig/WW.png}}
-	\caption{Quantum circuit of operator $G$ and $W$}
+	\caption{Quantum circuit of operator $K$ and $W$}
 	\label{W}
 \end{figure}
 
